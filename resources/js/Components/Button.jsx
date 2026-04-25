@@ -1,4 +1,4 @@
-import {Link} from "@inertiajs/react";
+import { Link } from "@inertiajs/react";
 
 export default function Button({
     isButtonLink = false,
@@ -6,6 +6,8 @@ export default function Button({
     type = "primary",
     onClick = () => {},
     children,
+    className = "",
+    ...props
 }) {
     let colorClass = "";
     if (type === "primary") {
@@ -22,7 +24,8 @@ export default function Button({
         return (
             <Link
                 href={href}
-                className={`inline-flex items-center px-4 py-2 ${colorClass} transition-colors duration-300 text-white cursor-pointer`}
+                className={`inline-flex items-center px-4 py-2 ${colorClass} transition-colors duration-300 text-white cursor-pointer ${className}`}
+                {...props}
             >
                 {children}
             </Link>
@@ -31,7 +34,8 @@ export default function Button({
     return (
         <button
             onClick={onClick}
-            className={`inline-flex items-center px-4 py-2 ${colorClass} transition-colors duration-300 text-white cursor-pointer`}
+            className={`inline-flex items-center px-4 py-2 ${colorClass} transition-colors duration-300 text-white cursor-pointer ${className}`}
+            {...props}
         >
             {children}
         </button>
