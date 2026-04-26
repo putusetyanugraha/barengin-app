@@ -12,7 +12,7 @@ class TripParticipant extends Model
         return $this->belongsTo(TripOrder::class);
     }
 
-    public function user_id(){
+    public function user(){
         return $this->belongsTo(User::class);
     }
 }

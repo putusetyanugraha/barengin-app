@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class GuideRatingTrip extends Model
 {
-    protected $fillable = ['user_id', 'trip_id', 'amount_rating', 'comment'];
+    protected $fillable = ['user_id', 'trip_id', 'trip_order_id', 'amount_rating', 'comment'];
     protected function casts(){
         return [
             'amount_rating' => 'decimal:2'
