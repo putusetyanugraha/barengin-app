@@ -22,6 +22,6 @@ class GuideRatingTrip extends Model
     }
 
     public function trip_order(){
-        return $this->belongsTo();
+        return $this->belongsTo(TripOrder::class);
     }
 }

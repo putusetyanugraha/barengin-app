@@ -23,4 +23,8 @@ class TripOrder extends Model
     public function trip_participants(){
         return $this->hasMany(TripParticipant::class);
     }
+
+    public function guide_rating_trip(){
+        return $this->hasOne(GuideRatingTrip::class);
+    }
 }
