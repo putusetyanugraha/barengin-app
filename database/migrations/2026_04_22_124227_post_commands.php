@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('post_commands', function(Blueprint $table){
             $table->id();
-            $table->foreignId('posts_id')->constrained()->onDelete('cascade')->onUpdate('cascade');
+            $table->foreignId('post_id')->constrained()->onDelete('cascade')->onUpdate('cascade');
             $table->foreignId('user_id')->constrained('users', 'user_id')->onDelete('cascade')->onUpdate('cascade');
             $table->foreignId('parent_id')->constrained('users', 'user_id')->onDelete('cascade')->onUpdate('cascade');
             $table->text('comment_text')->nullable();

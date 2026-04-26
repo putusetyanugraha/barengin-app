@@ -71,4 +71,16 @@ class User extends Authenticatable
     public function conversation_participants(){
         return $this->hasMany(ConversationParticipant::class);
     }
+
+    public function follows(){ // masih perlu dipertanyaakan karena ada follwer dan following
+        return $this->hasMany(Follow::class);
+    }
+
+    public function posts(){
+        return $this->hasMany(Post::class);
+    }
+
+    public function post_command(){ // ini perlu ditanya juga karena many to many dan dengan parent dan user itu sama table targetnya
+        return $this->hasMany(PostCommand::class);
+    }
 }
