@@ -63,4 +63,12 @@ class User extends Authenticatable
     public function pergi_bareng_participants(){
         return $this->hasMany(PergiBarengParticipant::class);
     }
+
+    public function messages(){
+        return $this->hasMany(Message::class);
+    }
+
+    public function conversation_participants(){
+        return $this->hasMany(ConversationParticipant::class);
+    }
 }

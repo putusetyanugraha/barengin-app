@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('conversations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('trips_id')->constrained()->onDelete('cascade')->onUpdate('cascade');
-            $table->foreignId('pergi_barengs_id')->constrained()->onDelete('cascade')->onUpdate('cascade');
-            $table->boolean('is_group');
+            $table->foreignId('trip_id')->nullable()->constrained()->onDelete('cascade')->onUpdate('cascade');
+            $table->foreignId('pergi_bareng_id')->nullable()->constrained()->onDelete('cascade')->onUpdate('cascade');
+            $table->boolean('is_group')->default(false);
             $table->timestamps();
         });
     }

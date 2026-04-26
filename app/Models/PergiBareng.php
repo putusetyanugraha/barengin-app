@@ -29,5 +29,9 @@ class PergiBareng extends Model
     public function appointment_images(){
         return $this->hasMany(AppointmentImage::class);
     }
+
+    public function conversations(){
+        return $this->hasOne(Conversation::class);
+    }
     
 }

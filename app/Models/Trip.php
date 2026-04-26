@@ -31,4 +31,8 @@ class Trip extends Model
         return $this->hasMany(TripOrder::class);
     }
 
+    public function conversations(){
+        return $this->hasOne(Conversation::class);
+    }
+
 }
