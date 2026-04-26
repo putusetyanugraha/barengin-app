@@ -27,4 +27,8 @@ class Transaction extends Model
     public function trip_order(){
         return $this->hasOne(TripOrder::class);
     }
+
+    public function jastip_order(){
+        return $this->hasOne(JastipOrder::class);
+    }
 }

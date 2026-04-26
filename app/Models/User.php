@@ -83,4 +83,16 @@ class User extends Authenticatable
     public function post_command(){ // ini perlu ditanya juga karena many to many dan dengan parent dan user itu sama table targetnya
         return $this->hasMany(PostCommand::class);
     }
+
+    public function jastips(){
+        return $this->hasMany(Jastip::class);
+    }
+
+    public function jastiper_ratings(){
+        return $this->hasMany(JastiperRating::class);
+    }
+
+    public function pergi_bareng_ratings(){
+        return $this->hasMany(PergiBarengRating::class);
+    }
 }

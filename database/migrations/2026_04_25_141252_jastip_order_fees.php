@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('jastip_orders_fees', function(Blueprint $table){
             $table->id();
-            $table->foreignId('jastip_orders')->constrained()->onDelete('cascade')->onUpdate('cascade');
-            $table->enum('fee_type', ['admin', 'assurance']);
+            $table->foreignId('jastip_order_id')->constrained()->onDelete('cascade')->onUpdate('cascade');
+            $table->string('fee_name');
             $table->decimal('amount', 15,2);
             $table->timestamps();
         });

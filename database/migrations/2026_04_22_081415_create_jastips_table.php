@@ -20,8 +20,8 @@ return new class extends Migration
             $table->dateTime('arrival_date');
             $table->dateTime('start_date');
             $table->dateTime('end_date');
-            $table->boolean('allow_pickup');
-            $table->boolean('allow_delivery');
+            $table->boolean('allow_pickup')->default(false);
+            $table->boolean('allow_delivery')->default(false);
             $table->timestamps();
         });
     }
