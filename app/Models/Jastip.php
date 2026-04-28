@@ -10,9 +10,9 @@ class Jastip extends Model
 
     protected function casts(){
         return [
-            'arrival_date' => 'datetime',
-            'start_date' => 'datetime',
-            'end_date' => 'datetime'
+            'arrival_date' => 'date',
+            'start_date' => 'date',
+            'end_date' => 'date'
         ];
     }
 

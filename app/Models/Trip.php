@@ -9,9 +9,8 @@ class Trip extends Model
     protected $fillable = ['name', 'description', 'people_amount', 'start_date', 'end_date', 'rating', 'price'];
     protected function casts(){
         return[
-            'start_date' => 'datetime',
-            'end_date' => 'datetime',
-            'rating' => 'decimal:2'
+            'rating' => 'decimal:2',
+            'price' => 'decimal:2'
         ];
     }
 

@@ -17,9 +17,9 @@ return new class extends Migration
             $table->string('origin_city');
             $table->string('destination_city');
             $table->text('pickup_location');
-            $table->dateTime('arrival_date');
-            $table->dateTime('start_date');
-            $table->dateTime('end_date');
+            $table->date('arrival_date');
+            $table->date('start_date');
+            $table->date('end_date');
             $table->boolean('allow_pickup')->default(false);
             $table->boolean('allow_delivery')->default(false);
             $table->timestamps();
