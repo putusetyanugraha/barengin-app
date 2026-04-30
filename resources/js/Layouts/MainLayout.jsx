@@ -39,7 +39,7 @@ export default function MainLayout({ children }) {
 
             <div className="w-full sticky top-0 z-[1000000]">
                 {!hideLayout &&
-                    (!user ? <NavbarAuth user={user} /> : <NavbarGuest />)}
+                    (user ? <NavbarAuth user={user} /> : <NavbarGuest />)}
             </div>
 
             <div className="flex-grow w-full">
