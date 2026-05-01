@@ -3,7 +3,9 @@ import { Link } from "@inertiajs/react";
 import Button from "@/Components/Button.jsx";
 import NavDropdown from "@/Components/NavDropdown.jsx";
 import NavLink from "@/Components/NavLink.jsx";
-import { FaRoute, FaCarSide, FaChevronDown } from "react-icons/fa";
+import NavLinkMobile from "@/Components/NavLinkMobile.jsx";
+import NavDropdownMobile from "@/Components/NavDropdownMobile.jsx";
+import { FaRoute, FaCarSide } from "react-icons/fa";
 
 export default function NavbarGuest() {
     const [isDesktopDropdownOpen, setIsDesktopDropdownOpen] = useState(false);
@@ -36,7 +38,6 @@ export default function NavbarGuest() {
                     />
                 </Link>
 
-                {/* Desktop nav */}
                 <nav className="hidden md:flex space-x-6 items-center text-neutral-700">
                     <NavLink href="/">Beranda</NavLink>
                     <NavDropdown
@@ -49,7 +50,6 @@ export default function NavbarGuest() {
                         menuWidthClass="w-60"
                         withDividers
                     />
-
                     <NavLink href="/jastip">Jastip</NavLink>
                     <NavLink href="/forum">Forum</NavLink>
                     <NavLink href="/leaderboard">Leaderboard</NavLink>
@@ -57,7 +57,6 @@ export default function NavbarGuest() {
 
                 <div className="hidden md:flex items-center space-x-4">
                     <NavLink href="/login">Masuk</NavLink>
-
                     <Button
                         isButtonLink
                         href="/sign-up"
@@ -69,7 +68,6 @@ export default function NavbarGuest() {
                     </Button>
                 </div>
 
-                {/* Mobile hamburger */}
                 <div className="md:hidden flex items-center">
                     <button
                         type="button"
@@ -84,7 +82,6 @@ export default function NavbarGuest() {
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
                             >
                                 <path
                                     strokeLinecap="round"
@@ -99,7 +96,6 @@ export default function NavbarGuest() {
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
                             >
                                 <path
                                     strokeLinecap="round"
@@ -113,72 +109,42 @@ export default function NavbarGuest() {
                 </div>
             </div>
 
-            {/* Mobile menu */}
             {isMobileMenuOpen && (
                 <div className="md:hidden bg-white border-t border-neutral-100 absolute w-full left-0 shadow-lg">
                     <div className="px-4 pt-2 pb-4 space-y-1">
-                        <Link
-                            href="/"
-                            onClick={closeAll}
-                            className="block px-3 py-3 rounded-md text-base font-medium text-neutral-700 hover:text-primary-700 hover:bg-neutral-50 transition-colors"
-                        >
+                        <NavLinkMobile href="/" onClick={closeAll}>
                             Beranda
-                        </Link>
+                        </NavLinkMobile>
 
-                        <div className="px-3 py-2">
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    setIsMobileDropdownOpen((v) => !v)
-                                }
-                                className="w-full flex justify-between items-center rounded-md text-base font-medium text-neutral-700 hover:text-primary-700 focus:outline-none transition-colors cursor-pointer"
-                                aria-expanded={isMobileDropdownOpen}
-                            >
-                                Jalan Bareng
-                                <FaChevronDown
-                                    className={[
-                                        "text-neutral-600 transition-transform duration-200",
-                                        isMobileDropdownOpen
-                                            ? "rotate-180"
-                                            : "",
-                                    ].join(" ")}
-                                />
-                            </button>
-
-                            {isMobileDropdownOpen && (
-                                <div className="mt-2 pl-2 space-y-1">
-                                    {dropdownItems.map((item) => (
-                                        <Link
-                                            key={item.href}
-                                            href={item.href}
-                                            onClick={closeAll}
-                                            className="block px-3 py-3 rounded-md text-base font-medium text-neutral-600 hover:text-primary-700 hover:bg-neutral-50 transition-colors flex items-center"
-                                        >
-                                            {item.icon && (
-                                                <item.icon className="w-4 h-4 mr-2" />
-                                            )}{" "}
-                                            {item.label}
-                                        </Link>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        <Link
-                            href="/jastip"
-                            onClick={closeAll}
-                            className="block px-3 py-3 rounded-md text-base font-medium text-neutral-700 hover:text-primary-700 hover:bg-neutral-50 transition-colors"
+                        <NavDropdownMobile
+                            label="Jalan Bareng"
+                            isOpen={isMobileDropdownOpen}
+                            onToggle={() => setIsMobileDropdownOpen((v) => !v)}
                         >
+                            {dropdownItems.map((item) => (
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    onClick={closeAll}
+                                    className="block px-3 py-3 rounded-md text-base font-medium text-neutral-600 hover:text-primary-700 hover:bg-neutral-50 transition-colors flex items-center"
+                                >
+                                    {item.icon ? (
+                                        <item.icon className="w-4 h-4 mr-2 text-current" />
+                                    ) : null}
+                                    {item.label}
+                                </Link>
+                            ))}
+                        </NavDropdownMobile>
+
+                        <NavLinkMobile href="/jastip" onClick={closeAll}>
                             Jastip
-                        </Link>
-
-                        <Link
-                            href="/forum"
-                            onClick={closeAll}
-                            className="block px-3 py-3 rounded-md text-base font-medium text-neutral-700 hover:text-primary-700 hover:bg-neutral-50 transition-colors"
-                        >
+                        </NavLinkMobile>
+                        <NavLinkMobile href="/forum" onClick={closeAll}>
                             Forum
-                        </Link>
+                        </NavLinkMobile>
+                        <NavLinkMobile href="/leaderboard" onClick={closeAll}>
+                            Leaderboard
+                        </NavLinkMobile>
                     </div>
 
                     <div className="pt-4 pb-6 border-t border-neutral-200 px-4 space-y-3">

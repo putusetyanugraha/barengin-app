@@ -51,7 +51,7 @@ export default function NavDropdown({
 
         const rowClass =
             "w-full flex items-center gap-3 px-5 py-4 text-left text-base font-medium " +
-            "text-neutral-700 hover:bg-primary-50 hover:text-primary-700 transition-colors";
+            "text-neutral-600 hover:bg-primary-50 hover:text-primary-700 transition-colors";
 
         // POST / button-like (Logout)
         if (item.as === "button") {
@@ -114,7 +114,7 @@ export default function NavDropdown({
                         "cursor-pointer font-medium transition-colors flex items-center gap-2 focus:outline-none",
                         isOpen
                             ? "text-primary-700"
-                            : "text-neutral-700 hover:text-primary-700",
+                            : "text-neutral-600 hover:text-primary-700",
                     ].join(" ")}
                     onClick={onToggle}
                     aria-expanded={isOpen}

@@ -13,7 +13,7 @@ export default function Button({
     ...props
 }) {
     const sizeClass =
-        size === "sm" ? "px-5 py-2.5 text-sm" : "px-6 py-2.5 text-base";
+        size === "sm" ? "px-5 py-2.5 text-sm" : "px-7 py-3 text-sm";
 
     const roundedClass = rounded ? "rounded-full" : "";
 

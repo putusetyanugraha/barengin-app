@@ -17,7 +17,7 @@ export default function MainLayout({ children }) {
     return (
         <>
             <Head>
-                <title>Barengin App</title>
+                <title>Barengin</title>
 
                 <meta
                     name="description"

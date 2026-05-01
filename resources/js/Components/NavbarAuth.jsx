@@ -3,13 +3,10 @@ import { Link, usePage } from "@inertiajs/react";
 import Button from "@/Components/Button.jsx";
 import NavDropdown from "@/Components/NavDropdown.jsx";
 import NavLink from "@/Components/NavLink.jsx";
+import NavLinkMobile from "@/Components/NavLinkMobile.jsx";
+import NavDropdownMobile from "@/Components/NavDropdownMobile.jsx";
 
-import {
-    FaRoute,
-    FaCarSide,
-    FaChevronDown,
-    FaPaperPlane,
-} from "react-icons/fa";
+import { FaRoute, FaCarSide, FaPaperPlane } from "react-icons/fa";
 import { MdDashboard } from "react-icons/md";
 import { HiOutlineDocumentText } from "react-icons/hi";
 import { FiLogOut } from "react-icons/fi";
@@ -45,7 +42,6 @@ export default function NavbarAuth() {
         setIsMobileUserDropdownOpen(false);
     };
 
-    // Close nested accordions when closing mobile menu
     useEffect(() => {
         if (!isMobileMenuOpen) {
             setIsMobileDropdownOpen(false);
@@ -68,7 +64,6 @@ export default function NavbarAuth() {
                     />
                 </Link>
 
-                {/* Desktop nav */}
                 <nav className="hidden md:flex space-x-6 items-center text-neutral-700">
                     <NavLink href="/">Beranda</NavLink>
 
@@ -88,7 +83,6 @@ export default function NavbarAuth() {
                     <NavLink href="/leaderboard">Leaderboard</NavLink>
                 </nav>
 
-                {/* Desktop actions */}
                 <div className="hidden md:flex items-center space-x-4">
                     <Button
                         isButtonLink
@@ -102,7 +96,6 @@ export default function NavbarAuth() {
                         Chat
                     </Button>
 
-                    {/* Profile dropdown uses NavDropdown trigger (avatar), like Jalan Bareng */}
                     <NavDropdown
                         items={[
                             {
@@ -128,20 +121,19 @@ export default function NavbarAuth() {
                         onNavigate={() => setIsProfileOpen(false)}
                         onClose={() => setIsProfileOpen(false)}
                         align="right"
-                        menuWidthClass="w-80"
+                        menuWidthClass="w-60"
                         withDividers
                         trigger={
                             <img
                                 src={avatarUrl}
                                 alt={user?.name || "Profile"}
-                                className="w-10 h-10 rounded-full object-cover border border-neutral-200 shadow-sm"
+                                className="w-10 h-10 rounded-full object-cover border border-neutral-200 shadow-sm cursor-pointer"
                             />
                         }
                         showChevron={false}
                     />
                 </div>
 
-                {/* Mobile hamburger */}
                 <div className="md:hidden flex items-center">
                     <button
                         type="button"
@@ -156,7 +148,6 @@ export default function NavbarAuth() {
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
                             >
                                 <path
                                     strokeLinecap="round"
@@ -171,7 +162,6 @@ export default function NavbarAuth() {
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
                             >
                                 <path
                                     strokeLinecap="round"
@@ -185,149 +175,97 @@ export default function NavbarAuth() {
                 </div>
             </div>
 
-            {/* Mobile menu (pattern matches NavbarGuest, plus User accordion) */}
             {isMobileMenuOpen && (
                 <div className="md:hidden bg-white border-t border-neutral-100 absolute w-full left-0 shadow-lg">
-                    {/* User accordion (like Jalan Bareng) */}
+                    {/* User accordion */}
                     <div className="px-4 pt-3 pb-2 border-b border-neutral-200">
-                        <button
-                            type="button"
-                            onClick={() =>
+                        <NavDropdownMobile
+                            label={
+                                <span className="flex items-center gap-3 min-w-0">
+                                    <img
+                                        src={avatarUrl}
+                                        alt={user?.name || "User"}
+                                        className="w-10 h-10 rounded-full object-cover border border-neutral-200 shrink-0"
+                                    />
+                                    <span className="truncate">
+                                        {user?.name || "User"}
+                                    </span>
+                                </span>
+                            }
+                            isOpen={isMobileUserDropdownOpen}
+                            onToggle={() =>
                                 setIsMobileUserDropdownOpen((v) => !v)
                             }
-                            className="w-full flex justify-between items-center px-3 py-3 rounded-md text-base font-medium text-neutral-700 hover:text-primary-700 hover:bg-neutral-50 transition-colors cursor-pointer"
-                            aria-expanded={isMobileUserDropdownOpen}
+                            buttonClassName="text-neutral-600"
                         >
-                            <div className="flex items-center gap-3 min-w-0">
-                                <img
-                                    src={avatarUrl}
-                                    alt={user?.name || "User"}
-                                    className="w-10 h-10 rounded-full object-cover border border-neutral-200 shrink-0"
-                                />
-                                <span className="truncate">
-                                    {user?.name || "User"}
-                                </span>
-                            </div>
-
-                            <FaChevronDown
-                                className={[
-                                    "text-neutral-600 transition-transform duration-200 shrink-0",
-                                    isMobileUserDropdownOpen
-                                        ? "rotate-180"
-                                        : "",
-                                ].join(" ")}
-                            />
-                        </button>
-
-                        {isMobileUserDropdownOpen && (
-                            <div className="mt-1 pl-2 space-y-1">
-                                <Link
-                                    href="/dashboard"
-                                    onClick={closeAll}
-                                    className="block px-3 py-3 rounded-md text-base font-medium text-neutral-600 hover:text-primary-700 hover:bg-neutral-50 transition-colors flex items-center"
-                                >
-                                    <MdDashboard className="w-5 h-5 mr-2 text-current" />
-                                    Dashboard
-                                </Link>
-
-                                <Link
-                                    href="/profile/history"
-                                    onClick={closeAll}
-                                    className="block px-3 py-3 rounded-md text-base font-medium text-neutral-600 hover:text-primary-700 hover:bg-neutral-50 transition-colors flex items-center"
-                                >
-                                    <HiOutlineDocumentText className="w-5 h-5 mr-2 text-current" />
-                                    Profile History
-                                </Link>
-
-                                <Link
-                                    href="/logout"
-                                    method="post"
-                                    as="button"
-                                    onClick={closeAll}
-                                    className="w-full text-left px-3 py-3 rounded-md text-base font-medium text-neutral-600 hover:text-primary-700 hover:bg-neutral-50 transition-colors flex items-center cursor-pointer"
-                                >
-                                    <FiLogOut className="w-5 h-5 mr-2 text-current" />
-                                    Logout
-                                </Link>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Main mobile nav */}
-                    <div className="px-4 pt-2 pb-4 space-y-1">
-                        <Link
-                            href="/"
-                            onClick={closeAll}
-                            className="block px-3 py-3 rounded-md text-base font-medium text-neutral-700 hover:text-primary-700 hover:bg-neutral-50 transition-colors"
-                        >
-                            Beranda
-                        </Link>
-
-                        <div className="px-3 py-2">
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    setIsMobileDropdownOpen((v) => !v)
-                                }
-                                className="w-full flex justify-between items-center rounded-md text-base font-medium text-neutral-700 hover:text-primary-700 focus:outline-none transition-colors cursor-pointer"
-                                aria-expanded={isMobileDropdownOpen}
+                            <Link
+                                href="/dashboard"
+                                onClick={closeAll}
+                                className="block px-3 py-3 rounded-md text-base font-medium text-neutral-600 hover:text-primary-700 hover:bg-neutral-50 transition-colors flex items-center"
                             >
-                                Jalan Bareng
-                                <FaChevronDown
-                                    className={[
-                                        "text-neutral-600 transition-transform duration-200",
-                                        isMobileDropdownOpen
-                                            ? "rotate-180"
-                                            : "",
-                                    ].join(" ")}
-                                />
-                            </button>
+                                <MdDashboard className="w-5 h-5 mr-2 text-current" />
+                                Dashboard
+                            </Link>
 
-                            {isMobileDropdownOpen && (
-                                <div className="mt-2 pl-2 space-y-1">
-                                    {dropdownItems.map((item) => (
-                                        <Link
-                                            key={item.href}
-                                            href={item.href}
-                                            onClick={closeAll}
-                                            className="block px-3 py-3 rounded-md text-base font-medium text-neutral-600 hover:text-primary-700 hover:bg-neutral-50 transition-colors flex items-center"
-                                        >
-                                            {item.icon ? (
-                                                <item.icon className="w-4 h-4 mr-2 text-current" />
-                                            ) : null}
-                                            {item.label}
-                                        </Link>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                            <Link
+                                href="/profile/history"
+                                onClick={closeAll}
+                                className="block px-3 py-3 rounded-md text-base font-medium text-neutral-600 hover:text-primary-700 hover:bg-neutral-50 transition-colors flex items-center"
+                            >
+                                <HiOutlineDocumentText className="w-5 h-5 mr-2 text-current" />
+                                Profile History
+                            </Link>
 
-                        <Link
-                            href="/jastip"
-                            onClick={closeAll}
-                            className="block px-3 py-3 rounded-md text-base font-medium text-neutral-700 hover:text-primary-700 hover:bg-neutral-50 transition-colors"
-                        >
-                            Jastip
-                        </Link>
-
-                        <Link
-                            href="/forum"
-                            onClick={closeAll}
-                            className="block px-3 py-3 rounded-md text-base font-medium text-neutral-700 hover:text-primary-700 hover:bg-neutral-50 transition-colors"
-                        >
-                            Forum
-                        </Link>
-
-                        <Link
-                            href="/leaderboard"
-                            onClick={closeAll}
-                            className="block px-3 py-3 rounded-md text-base font-medium text-neutral-700 hover:text-primary-700 hover:bg-neutral-50 transition-colors"
-                        >
-                            Leaderboard
-                        </Link>
+                            <Link
+                                href="/logout"
+                                method="post"
+                                as="button"
+                                onClick={closeAll}
+                                className="w-full text-left px-3 py-3 rounded-md text-base font-medium text-neutral-600 hover:text-primary-700 hover:bg-neutral-50 transition-colors flex items-center cursor-pointer"
+                            >
+                                <FiLogOut className="w-5 h-5 mr-2 text-current" />
+                                Logout
+                            </Link>
+                        </NavDropdownMobile>
                     </div>
 
-                    {/* Mobile actions */}
+                    <div className="px-4 pt-2 pb-4 space-y-1">
+                        <NavLinkMobile href="/" onClick={closeAll}>
+                            Beranda
+                        </NavLinkMobile>
+
+                        <NavDropdownMobile
+                            label="Jalan Bareng"
+                            isOpen={isMobileDropdownOpen}
+                            onToggle={() => setIsMobileDropdownOpen((v) => !v)}
+                            buttonClassName="text-neutral-600"
+                        >
+                            {dropdownItems.map((item) => (
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    onClick={closeAll}
+                                    className="block px-3 py-3 rounded-md text-base font-medium text-neutral-600 hover:text-primary-700 hover:bg-neutral-50 transition-colors flex items-center"
+                                >
+                                    {item.icon ? (
+                                        <item.icon className="w-4 h-4 mr-2 text-current" />
+                                    ) : null}
+                                    {item.label}
+                                </Link>
+                            ))}
+                        </NavDropdownMobile>
+
+                        <NavLinkMobile href="/jastip" onClick={closeAll}>
+                            Jastip
+                        </NavLinkMobile>
+                        <NavLinkMobile href="/forum" onClick={closeAll}>
+                            Forum
+                        </NavLinkMobile>
+                        <NavLinkMobile href="/leaderboard" onClick={closeAll}>
+                            Leaderboard
+                        </NavLinkMobile>
+                    </div>
+
                     <div className="pt-4 pb-6 border-t border-neutral-200 px-4 space-y-3">
                         <Button
                             isButtonLink
