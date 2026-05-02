@@ -41,7 +41,7 @@ class GoogleAuthController extends Controller
             ]);
         }
 
-        // Cari user berdasarkan google_id atau email untuk linking akun
+        // cari user berdasarkan google_id atau email untuk linking akun
         $user = User::query()
             ->where('google_id', $googleId)
             ->orWhere('email', $email)
@@ -62,7 +62,7 @@ class GoogleAuthController extends Controller
 
             $isNewUser = true;
         } else {
-            // Link akun lama dengan Google jika belum ada
+            // link akun lama dengan Google jika belum ada
             $user->update([
                 'google_id' => $user->google_id ?: $googleId,
                 'profile_image' => $user->profile_image ?: $googleUser->getAvatar(),
@@ -71,16 +71,16 @@ class GoogleAuthController extends Controller
 
         Auth::login($user, true);
 
-        ActivityLog::create([
-            'user_id' => $user->user_id,
-            'action' => $isNewUser ? 'user.registered_google' : 'user.login_google',
-            'meta' => json_encode([
-                'username' => $user->username,
-                'email' => $user->email,
-            ]),
-        ]);
+        // ActivityLog::create([
+        //     'user_id' => $user->user_id,
+        //     'action' => $isNewUser ? 'user.registered_google' : 'user.login_google',
+        //     'meta' => json_encode([
+        //         'username' => $user->username,
+        //         'email' => $user->email,
+        //     ]),
+        // ]);
 
-        // Flow onboarding
+        // flow onboarding
         if ($isNewUser || !$user->onboarding_completed) {
             return redirect('/onboarding');
         }

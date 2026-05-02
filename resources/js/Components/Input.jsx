@@ -1,40 +1,110 @@
 import React from "react";
 
-/**
- * Reusable Input component (text, email, password, number, date, etc)
- *
- * Props:
- * - id, name, type, value, onChange, placeholder, autoComplete, disabled, required, etc.
- * - label: string (optional)
- * - error: string (optional)
- * - size: "sm" | "md" (padding only)
- * - rounded: boolean (default true) -> rounded-xl when true
- * - leftIcon / rightIcon: ReactNode (optional)
- * - rightAddon: ReactNode (optional) (e.g. eye toggle button)
- */
 export default function Input({
     label,
     error,
-    size = "md",
+    size = "md", // sm | md
     rounded = true,
     className = "",
     inputClassName = "",
+    wrapperClassName = "",
+
     leftIcon = null,
     rightIcon = null,
-    rightAddon = null,
-    wrapperClassName = "",
+
+    // NEW:
+    leftAddon = null, // ReactNode (e.g. "+62")
+    rightAddon = null, // ReactNode (e.g. eye toggle)
+
     ...props
 }) {
-    const sizeClass = size === "sm" ? "h-11 px-4 text-sm" : "h-12 px-4 text-sm";
-    const roundedClass = rounded ? "rounded-lg" : "";
+    const heightClass = size === "sm" ? "h-11" : "h-12";
+    const textClass = "text-sm";
+    const roundedClass = rounded ? "rounded-xl" : "";
 
-    const hasLeft = Boolean(leftIcon);
+    const hasLeftIcon = Boolean(leftIcon);
     const hasRight = Boolean(rightIcon || rightAddon);
 
-    const inputPadding = [hasLeft ? "pl-11" : "", hasRight ? "pr-12" : ""]
+    const inputPadding = [
+        "px-4",
+        hasLeftIcon ? "pl-11" : "",
+        hasRight ? "pr-12" : "",
+    ]
         .filter(Boolean)
         .join(" ");
 
+    const baseInput =
+        "w-full border border-neutral-400 bg-white text-neutral-700 placeholder:text-neutral-500 " +
+        "focus:border-primary-700 focus:outline-none " +
+        "disabled:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-70";
+
+    // If we have leftAddon, we render an input-group container
+    if (leftAddon) {
+        return (
+            <div className={wrapperClassName}>
+                {label ? (
+                    <label
+                        htmlFor={props.id}
+                        className="mb-2 block text-sm text-neutral-700"
+                    >
+                        {label}
+                    </label>
+                ) : null}
+
+                <div
+                    className={[
+                        "flex w-full overflow-hidden border border-neutral-400 bg-white",
+                        roundedClass,
+                        "focus-within:border-primary-700",
+                        heightClass,
+                        className,
+                    ].join(" ")}
+                >
+                    <div className="flex items-center justify-center border-r border-neutral-400 bg-neutral-50 px-4 text-sm font-medium text-neutral-700">
+                        {leftAddon}
+                    </div>
+
+                    <div className="relative flex-1">
+                        {leftIcon ? (
+                            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
+                                {leftIcon}
+                            </div>
+                        ) : null}
+
+                        <input
+                            {...props}
+                            className={[
+                                "h-full w-full bg-transparent",
+                                "text-sm text-neutral-700 placeholder:text-neutral-500",
+                                "focus:outline-none",
+                                hasLeftIcon ? "pl-11" : "px-4",
+                                hasRight ? "pr-12" : "",
+                                inputClassName,
+                            ].join(" ")}
+                        />
+
+                        {rightIcon ? (
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500">
+                                {rightIcon}
+                            </div>
+                        ) : null}
+
+                        {rightAddon ? (
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                {rightAddon}
+                            </div>
+                        ) : null}
+                    </div>
+                </div>
+
+                {error ? (
+                    <p className="mt-1 text-sm text-red-500">{error}</p>
+                ) : null}
+            </div>
+        );
+    }
+
+    // Normal input
     return (
         <div className={wrapperClassName}>
             {label ? (
@@ -56,11 +126,10 @@ export default function Input({
                 <input
                     {...props}
                     className={[
-                        "w-full border border-neutral-400 bg-white text-neutral-700 placeholder:text-neutral-500",
-                        "focus:border-primary-700 focus:outline-none",
-                        "disabled:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-70",
+                        baseInput,
+                        heightClass,
+                        textClass,
                         roundedClass,
-                        sizeClass,
                         inputPadding,
                         inputClassName,
                     ].join(" ")}

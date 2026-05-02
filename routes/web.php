@@ -14,15 +14,11 @@ Route::get('/', function () {
 | Guest routes
 |--------------------------------------------------------------------------
 */
+// Auth
+Route::get('/login', [AuthController::class, 'login'])->name('login');
+Route::post('/login', [AuthController::class, 'authenticate'])->name('login.store');
 Route::middleware('guest')->group(function () {
 
-    // Auth
-    Route::get('/login', [AuthController::class, 'login'])->name('login');
-    Route::post('/login', [AuthController::class, 'authenticate'])->name('login.store');
-
-Route::get('/onboarding', [OnboardingController::class, 'onboarding'])->name('onboarding.index');
-Route::post('/onboarding', [OnboardingController::class, 'setupProfile']);
-Route::post('/onboarding/complete', [OnboardingController::class, 'completeOnboarding']);
     
     Route::get('/sign-up', [AuthController::class, 'signup'])->name('register');
     Route::post('/sign-up', [AuthController::class, 'register'])->name('register.store');
@@ -57,12 +53,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/onboarding', [OnboardingController::class, 'setupProfile'])->name('onboarding.store');
     Route::post('/onboarding/complete', [OnboardingController::class, 'completeOnboarding'])->name('onboarding.complete');
 
-
-    Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])
-    ->name('auth.google.redirect');
-
-    Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])
-    ->name('auth.google.callback');
     // Logout 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
