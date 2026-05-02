@@ -4,6 +4,8 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import Button from "@/Components/Button.jsx";
 import Input from "@/Components/Input.jsx";
 import MainLayout from "@/Layouts/MainLayout.jsx";
+import FlashMessage from "@/Components/FlashMessage.jsx";
+import Checkbox from "@/Components/Checkbox.jsx";
 
 export default function Register() {
     const [hidePassword, setHidePassword] = useState(true);
@@ -19,7 +21,7 @@ export default function Register() {
 
     const submit = (e) => {
         e.preventDefault();
-        post("/sign-up");
+        post("/register");
     };
 
     return (
@@ -45,6 +47,8 @@ export default function Register() {
                         </p>
 
                         <form onSubmit={submit} className="mt-8 space-y-4">
+                            <FlashMessage className="mb-4" />
+
                             <Input
                                 id="username"
                                 type="text"
@@ -142,35 +146,24 @@ export default function Register() {
                                 }
                             />
 
-                            {/* remember */}
                             <div className="flex items-center justify-between pt-1">
-                                <label className="flex items-center gap-2 text-sm text-neutral-700">
-                                    <input
-                                        type="checkbox"
-                                        checked={data.remember}
-                                        onChange={(e) =>
-                                            setData(
-                                                "remember",
-                                                e.target.checked,
-                                            )
-                                        }
-                                        className="h-4 w-4 rounded border-neutral-300 text-primary-700 focus:ring-primary-700"
-                                    />
-                                    Ingat saya 30 hari kedepan
-                                </label>
+                                <Checkbox
+                                    id="remember"
+                                    checked={data.remember}
+                                    onChange={(v) => setData("remember", v)}
+                                    label="Ingat saya 30 hari kedepan"
+                                />
                             </div>
 
-                            {/* submit */}
                             <Button
                                 type="primary"
                                 variant="solid"
                                 className="w-full mt-2"
                                 disabled={processing}
                             >
-                                {processing ? "Loading..." : "Sign Up"}
+                                {processing ? "Loading..." : "Register"}
                             </Button>
 
-                            {/* google */}
                             <Button
                                 type="neutral"
                                 variant="outline"
@@ -186,7 +179,7 @@ export default function Register() {
                                     alt="Google"
                                     className="h-5 w-5"
                                 />
-                                Sign In with Google
+                                Login with Google
                             </Button>
 
                             <p className="pt-2 text-center text-sm text-neutral-700">
@@ -195,7 +188,7 @@ export default function Register() {
                                     href="/login"
                                     className="font-semibold underline hover:opacity-80"
                                 >
-                                    Sign In
+                                    Login
                                 </Link>
                             </p>
                         </form>

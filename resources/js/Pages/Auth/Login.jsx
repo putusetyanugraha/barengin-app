@@ -5,6 +5,7 @@ import FlashMessage from "@/Components/FlashMessage.jsx";
 import Button from "@/Components/Button.jsx";
 import MainLayout from "@/Layouts/MainLayout.jsx";
 import Input from "@/Components/Input.jsx";
+import Checkbox from "@/Components/Checkbox.jsx";
 
 export default function Login() {
     const [hidePassword, setHidePassword] = useState(true);
@@ -43,7 +44,7 @@ export default function Login() {
                         </p>
 
                         <form onSubmit={submit} className="mt-8 space-y-4">
-                            <FlashMessage className="mb-2" />
+                            <FlashMessage className="mb-4" />
 
                             <Input
                                 id="login"
@@ -91,22 +92,13 @@ export default function Login() {
                                 }
                             />
 
-                            {/* remember + forgot */}
                             <div className="flex items-center justify-between pt-1">
-                                <label className="flex items-center gap-2 text-sm text-neutral-700">
-                                    <input
-                                        type="checkbox"
-                                        checked={data.remember}
-                                        onChange={(e) =>
-                                            setData(
-                                                "remember",
-                                                e.target.checked,
-                                            )
-                                        }
-                                        className="h-4 w-4 rounded border-neutral-300 text-primary-700 focus:ring-primary-700"
-                                    />
-                                    Ingat saya 30 hari kedepan
-                                </label>
+                                <Checkbox
+                                    id="remember"
+                                    checked={data.remember}
+                                    onChange={(v) => setData("remember", v)}
+                                    label="Ingat saya 30 hari kedepan"
+                                />
 
                                 <Link
                                     href="/forgot-password"
@@ -122,7 +114,7 @@ export default function Login() {
                                 className="w-full mt-2"
                                 disabled={processing}
                             >
-                                {processing ? "Loading..." : "Sign In"}
+                                {processing ? "Loading..." : "Login"}
                             </Button>
 
                             <Button
@@ -140,16 +132,16 @@ export default function Login() {
                                     alt="Google"
                                     className="h-5 w-5"
                                 />
-                                Sign In with Google
+                                Login with Google
                             </Button>
 
                             <p className="pt-2 text-center text-sm text-neutral-700">
                                 Belum mempunyai akun?{" "}
                                 <Link
-                                    href="/sign-up"
+                                    href="/register"
                                     className="font-semibold underline hover:opacity-80"
                                 >
-                                    Sign Up
+                                    Register
                                 </Link>
                             </p>
                         </form>

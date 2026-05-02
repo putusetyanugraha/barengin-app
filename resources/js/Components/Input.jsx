@@ -12,9 +12,8 @@ export default function Input({
     leftIcon = null,
     rightIcon = null,
 
-    // NEW:
-    leftAddon = null, // ReactNode (e.g. "+62")
-    rightAddon = null, // ReactNode (e.g. eye toggle)
+    leftAddon = null, // ReactNode (ex: "+62")
+    rightAddon = null, // ReactNode (ex: eye toggle)
 
     ...props
 }) {
@@ -38,7 +37,7 @@ export default function Input({
         "focus:border-primary-700 focus:outline-none " +
         "disabled:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-70";
 
-    // If we have leftAddon, we render an input-group container
+    // kalau ada leftAddon, kita tampilkan input-group container
     if (leftAddon) {
         return (
             <div className={wrapperClassName}>
@@ -104,7 +103,7 @@ export default function Input({
         );
     }
 
-    // Normal input
+    // normal input without input-group
     return (
         <div className={wrapperClassName}>
             {label ? (

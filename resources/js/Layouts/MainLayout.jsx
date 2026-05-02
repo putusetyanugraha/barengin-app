@@ -12,7 +12,7 @@ export default function MainLayout({ children }) {
 
     const hideLayout =
         url.startsWith("/reset-password") ||
-        ["/login", "/sign-up", "/onboarding", "/forgot-password"].includes(url);
+        ["/login", "/register", "/onboarding", "/forgot-password"].includes(url);
 
     return (
         <>

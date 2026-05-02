@@ -65,7 +65,7 @@ export default function NavDropdown({
                         onClose();
                         item.onClick?.();
                     }}
-                    className={rowClass}
+                    className={rowClass + ' cursor-pointer'}
                 >
                     {Icon ? (
                         <Icon className="w-5 h-5 text-current shrink-0" />

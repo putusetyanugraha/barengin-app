@@ -15,13 +15,12 @@ Route::get('/', function () {
 |--------------------------------------------------------------------------
 */
 // Auth
-Route::get('/login', [AuthController::class, 'login'])->name('login');
-Route::post('/login', [AuthController::class, 'authenticate'])->name('login.store');
 Route::middleware('guest')->group(function () {
+    Route::get('/login', [AuthController::class, 'login'])->name('login');
+    Route::post('/login', [AuthController::class, 'authenticate'])->name('login.store');
 
-    
-    Route::get('/sign-up', [AuthController::class, 'signup'])->name('register');
-    Route::post('/sign-up', [AuthController::class, 'register'])->name('register.store');
+    Route::get('/register', [AuthController::class, 'signup'])->name('register');
+    Route::post('/register', [AuthController::class, 'register'])->name('register.store');
 
     // Forgot / Reset password
     Route::get('/forgot-password', [AuthController::class, 'forgotPassword'])->name('password.request');

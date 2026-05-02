@@ -59,7 +59,7 @@ export default function NavbarGuest() {
                     <NavLink href="/login">Masuk</NavLink>
                     <Button
                         isButtonLink
-                        href="/sign-up"
+                        href="/register"
                         type="primary"
                         variant="solid"
                         size="sm"
@@ -160,7 +160,7 @@ export default function NavbarGuest() {
                         </Button>
                         <Button
                             isButtonLink
-                            href="/sign-up"
+                            href="/register"
                             type="primary"
                             variant="solid"
                             className="w-full"

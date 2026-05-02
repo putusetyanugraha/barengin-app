@@ -16,7 +16,6 @@ use Illuminate\Support\Facades\Password;
 use App\Rules\StrongPassword;
 
 
-// Ubah nama dalam data base
 function usernameToFullName(string $username): string
 {
     // Mengubah _ dan . menjadi spasi
@@ -27,7 +26,6 @@ function usernameToFullName(string $username): string
     $name = trim(preg_replace('/\s+/', ' ', $name));
     return Str::title($name);
 }
-
 
 class AuthController extends Controller
 {
@@ -67,8 +65,7 @@ class AuthController extends Controller
                 "boolean"
             ]
         ], [
-            // Massage
-            "username.regex" => "Username can only contains alphanumeric characters, underscore (_), and dot (.)",
+            "username.regex" => "Username hanya boleh berisi karakter alfanumerik, garis bawah (_), dan titik (.).",
         ]);
 
 
@@ -78,7 +75,6 @@ class AuthController extends Controller
             "password" => $validated["password"],
             "full_name" => usernameToFullName($validated["username"])
         ]);
-
 
         $remember = $request->boolean('remember');
         Auth::login($user, $remember);
@@ -105,67 +101,35 @@ class AuthController extends Controller
         if (!Auth::attempt($credentials, $remember)) {
             return back()->with('flash', [
                 'type' => 'error', // three category yaa ada error, success, info
-                'message' => 'The credentials do not match our records.',
+                'message' => 'Kredensial tersebut tidak sesuai dengan catatan kami.',
             ]);
         }
 
         $request->session()->regenerate();
         return redirect()->intended('/')->with('flash', [
             'type' => 'success',
-            'message' => 'Welcome back, ' . Auth::user()->full_name . '!',
+            'message' => 'Selamat datang kembali, ' . Auth::user()->full_name . '!',
         ]);
     }
 
-    public function signOut(Request $request){
-        ActivityLog::create([
-            'user_id' => Auth::user()->user_id,
-            'action' => 'user.logout',
-            'meta' => json_encode([
-                'username' => Auth::user()->username,
-            ]),
-        ]);
+    public function logout(Request $request)
+    {
         Auth::logout();
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('/');
+
+        return redirect()->route('login');
     }
 
     public function forgotPassword(){
-        return Inertia::render('Auth/ForgotPassword', [
-            'turnstileSiteKey' => config('services.turnstile.site_key'),
-        ]);
+        return Inertia::render('Auth/ForgotPassword');
     }
 
     public function sendResetLink(Request $request){
         $validated = $request->validate([
-            // 'email' => ['required', 'email', 'exists:users,'],
             'email' => ['required', 'email'],
-            'turnstile_token' => ['required', 'string', 'max:2048'],
-        ], [
-            'email.exists' => 'Account not found.',
-            'turnstile_token.required' => 'Please complete the captcha.',
         ]);
-
-        // turnstile verification to cloudflare bro tired
-        $response = Http::asForm()
-            ->timeout(5)
-            ->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
-                'secret'   => config('services.turnstile.secret_key'),
-                'response' => $validated['turnstile_token'],
-                'remoteip' => $request->ip(),
-            ]);
-
-        if (!$response->ok() || $response->json('success') !== true) {
-            return back()->withErrors([
-                'turnstile_token' => 'Captcha verification failed. Please try again.',
-            ]);
-        }
-
-        if (!($response->json('success') === true)) {
-            return back()->withErrors([
-                'turnstile_token' => 'Captcha verification failed. Please try again.',
-            ]);
-        }
 
         $status = Password::sendResetLink(['email' => $validated['email']]);
 
@@ -205,7 +169,7 @@ class AuthController extends Controller
             return redirect('/login');
         }
 
-        return Inertia::render('ResetPassword', [
+        return Inertia::render('Auth/ResetPassword', [
             'token' => $token,
             'email' => $email,
             'username' => $user->username,
@@ -242,15 +206,5 @@ class AuthController extends Controller
             'type' => 'error',
             'message' => __($status),
         ]);
-    }
-
-    public function logout(Request $request)
-    {
-        Auth::logout();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect()->route('login');
     }
 }

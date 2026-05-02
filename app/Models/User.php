@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Notifications\CustomResetPasswordNotification;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -15,6 +16,7 @@ class User extends Authenticatable
     use HasFactory, Notifiable, HasApiTokens;
 
     protected $primaryKey = 'user_id';
+    protected $appends = ['public_profile_image'];
 
     /**
      * The attributes that are mass assignable.
@@ -47,6 +49,27 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new CustomResetPasswordNotification($token));
+    }
+
+    public function getPublicProfileImageAttribute(){
+        if (! $this->profile_image) {
+            return asset('assets/sample-images/default-profile.png');
+        }
+
+        // jika sudah berupa URL lengkap (google avatar images)
+        if (
+            str_starts_with($this->profile_image, 'http://') ||
+            str_starts_with($this->profile_image, 'https://')
+        ) {
+            return $this->profile_image;
+        }
+
+        return asset('storage/' . $this->profile_image);
     }
 
     public function guide_ratings(){

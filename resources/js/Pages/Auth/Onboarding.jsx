@@ -59,7 +59,6 @@ export default function Onboarding({ user }) {
                                 size="md"
                             />
 
-                            {/* Phone with +62 prefix (kept same layout but styling aligned) */}
                             <Input
                                 id="phone"
                                 type="text"
@@ -74,7 +73,6 @@ export default function Onboarding({ user }) {
                                 error={errors.phone}
                             />
 
-                            {/* Gender select styled like inputs */}
                             <Select
                                 id="gender"
                                 label="Jenis Kelamin"
@@ -102,7 +100,6 @@ export default function Onboarding({ user }) {
                                 inputClassName="text-neutral-700"
                             />
 
-                            {/* Buttons */}
                             <Button
                                 type="primary"
                                 variant="solid"

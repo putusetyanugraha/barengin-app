@@ -74,7 +74,7 @@ export default function NavbarAuth() {
                         onToggle={() => setIsDesktopDropdownOpen((v) => !v)}
                         onNavigate={() => setIsDesktopDropdownOpen(false)}
                         onClose={() => setIsDesktopDropdownOpen(false)}
-                        menuWidthClass="w-60"
+                        menuWidthClass="w-55"
                         withDividers
                     />
 
@@ -121,11 +121,11 @@ export default function NavbarAuth() {
                         onNavigate={() => setIsProfileOpen(false)}
                         onClose={() => setIsProfileOpen(false)}
                         align="right"
-                        menuWidthClass="w-60"
+                        menuWidthClass="w-55"
                         withDividers
                         trigger={
                             <img
-                                src={avatarUrl}
+                                src={user?.public_profile_image}
                                 alt={user?.name || "Profile"}
                                 className="w-10 h-10 rounded-full object-cover border border-neutral-200 shadow-sm cursor-pointer"
                             />

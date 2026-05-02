@@ -22,6 +22,8 @@ export default function ResetPassword({ token, email }) {
         post("/reset-password");
     };
 
+    console.log('something');
+
     return (
         <div className="min-h-screen w-full bg-white">
             <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
