@@ -12,7 +12,7 @@ export default function AboutSection() {
                     className="mb-8"
                 />
 
-                <h2 className="text-2xl md:text-3xl font-medium mb-8 leading-tight text-justify text-neutral-700">
+                <h2 className="text-2xl md:text-3xl font-medium mb-8 leading-normal text-justify text-neutral-700">
                     Kami merancang perjalanan di seluruh dunia{" "}
                     <span className="text-neutral-500">
                         dengan memadukan destinasi ikonik dan hidden gems untuk
@@ -20,7 +20,7 @@ export default function AboutSection() {
                     </span>
                 </h2>
 
-                <div className="relative rounded-2xl overflow-hidden h-[380px] mb-8">
+                <div className="relative rounded-2xl overflow-hidden h-[280px] md:h-[380px] mb-8">
                     <img
                         src="/assets/home/about-us.jpg"
                         alt="About"
@@ -28,7 +28,7 @@ export default function AboutSection() {
                     />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-8 lg:mb-16 text-sm text-neutral-600">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-8 lg:mb-16 text-sm text-neutral-700">
                     <p>
                         Tim kami terdiri dari para pecinta tempat, ahli lokal,
                         dan spesialis perjalanan yang berdedikasi untuk
@@ -63,10 +63,10 @@ export default function AboutSection() {
 function AboutStat({ value, text }) {
     return (
         <div>
-            <h3 className="text-4xl lg:text-5xl mb-2 text-neutral-600">
+            <h3 className="text-4xl lg:text-5xl mb-2 text-neutral-700">
                 {value}
             </h3>
-            <p className="text-sm text-neutral-600">{text}</p>
+            <p className="text-sm text-neutral-700">{text}</p>
         </div>
     );
 }

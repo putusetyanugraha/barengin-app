@@ -1,8 +1,9 @@
 import React from "react";
+import { FaStar } from "react-icons/fa";
 
 export default function TripCard({ trip }) {
     return (
-        <div className="relative h-96 rounded-2xl overflow-hidden group cursor-pointer">
+        <div className="relative h-74 md:h-96 rounded-2xl overflow-hidden group cursor-pointer">
             <img
                 src={trip.image}
                 alt={trip.title}
@@ -10,8 +11,8 @@ export default function TripCard({ trip }) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
 
-            <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                <i className="fa-solid fa-star text-warning-600 text-[10px]" />{" "}
+            <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                <FaStar className="text-warning-600 text-sm" />
                 {trip.rating} rating
             </div>
 

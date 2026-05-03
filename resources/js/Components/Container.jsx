@@ -5,7 +5,7 @@ import React from "react";
  * Centralized responsive page padding + max width.
  *
  * Default classes:
- * - container mx-auto
+ * - max-w-7xl (1280px) mx-auto
  * - py-2
  * - px-4 sm:px-6 lg:px-8
  *
@@ -23,7 +23,7 @@ export default function Container({ as: Component = "div", className = "", child
     return (
         <Component
             className={[
-                "container mx-auto py-2 px-4 sm:px-6 lg:px-8",
+                "max-w-7xl mx-auto py-2 px-4 sm:px-6 lg:px-8",
                 className,
             ].join(" ")}
             {...props}

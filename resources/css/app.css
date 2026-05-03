@@ -69,7 +69,7 @@
 
 
     /* Container */
-    --container-padding: 4rem; /* default horizontal padding */
+    --container-padding: 1rem; /* default horizontal padding */
     --container-max-width-sm: 640px;
     --container-max-width-md: 768px;
     --container-max-width-lg: 1024px;
@@ -81,4 +81,10 @@ html {
     font-family: var(--font-poppins);
     color: var(--color-neutral-700);
     font-size: 14.4px;
+}
+
+@media (max-width: 640px) {
+    html {
+        font-size: 13.5px;
+    }
 }

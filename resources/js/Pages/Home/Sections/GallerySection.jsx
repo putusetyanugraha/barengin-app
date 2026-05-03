@@ -1,49 +1,57 @@
 import React from "react";
 import Container from "@/Components/Container";
-import Button from "@/Components/Button";
 import SectionHeading from "../Partials/SectionHeading";
-import GalleryItem from "../Cards/GalleryItem";
+import GalleryGrid from "../Partials/GalleryGrid";
 
 export default function GallerySection() {
-    const src = "/assets/hero-bg.jpg";
+    const images = [
+        "/assets/home/gallery.jpg",
+        "/assets/home/gallery.jpg",
+        "/assets/home/gallery.jpg",
+        "/assets/home/gallery.jpg",
+        "/assets/home/gallery.jpg",
+        "/assets/home/gallery.jpg",
+        "/assets/home/gallery.jpg",
+    ];
+
+    const items = [
+        // Mobile (grid-cols-6): 3+3
+        // Desktop (grid-cols-12): 3,2,3,4
+        { id: 1, src: images[0], spanClass: "col-span-3 md:col-span-3" },
+        { id: 2, src: images[1], spanClass: "col-span-3 md:col-span-2" },
+
+        // Mobile: 2+2+2 (three small tiles)
+        { id: 3, src: images[2], spanClass: "col-span-2 md:col-span-3" },
+        { id: 4, src: images[3], spanClass: "col-span-2 md:col-span-4" },
+        { id: 5, src: images[4], spanClass: "col-span-2 md:col-span-6" },
+
+        // Mobile: 3+3
+        { id: 6, src: images[5], spanClass: "col-span-3 md:col-span-4" },
+        { id: 7, src: images[6], spanClass: "col-span-3 md:col-span-2" },
+    ];
 
     return (
-        <section className="py-12 text-center border-t border-neutral-100 mt-8 pt-16">
+        <section className="py-12 text-center mt-8 pt-4">
             <Container>
                 <SectionHeading
                     label="Gallery"
                     align="center"
-                    className="mb-4"
+                    className="mb-12"
                 />
 
-                <h2 className="text-3xl font-semibold mb-12 text-neutral-700">
+                <h2 className="text-3xl font-medium mb-10 text-neutral-700 leading-normal">
                     Temukan Bentang Alam,{" "}
-                    <span className="text-neutral-400">
+                    <span className="text-neutral-500">
                         Budaya, dan
                         <br /> Momen-Momen dalam Foto
                     </span>
                 </h2>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 relative">
-                    <GalleryItem src={src} />
-                    <GalleryItem src={src} />
-                    <GalleryItem src={src} />
-                    <GalleryItem src={src} />
-
-                    <GalleryItem src={src} className="col-span-2" />
-                    <GalleryItem src={src} />
-                    <GalleryItem src={src} />
-
-                    <Button
-                        type="neutral"
-                        variant="solid"
-                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full px-6 py-2 text-sm shadow-lg"
-                    >
-                        Lihat Lebih Banyak
-                    </Button>
+                <div className="mb-8">
+                    <GalleryGrid items={items} ctaLabel="Lihat Lebih Banyak" />
                 </div>
 
-                <p className="text-sm text-neutral-500 max-w-2xl mx-auto">
+                <p className="text-sm text-neutral-700 max-w-2xl mx-auto">
                     Masuki dunia melalui galeri kurasi kami, yang mengabadikan
                     keindahan, budaya, dan momen tak terlupakan dari perjalanan
                     kami di seluruh negeri.

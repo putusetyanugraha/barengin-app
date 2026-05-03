@@ -15,28 +15,28 @@ export default function Home() {
             title: "Malang, Jawa Timur",
             duration: "3 Hari, 2 Malam",
             rating: "4,9",
-            image: "/assets/hero-bg.jpg",
+            image: "/assets/home/trip-card-image.jpg",
         },
         {
             id: 2,
             title: "Pati, Jawa Tengah",
             duration: "3 Hari, 2 Malam",
             rating: "4,9",
-            image: "/assets/hero-bg.jpg",
+            image: "/assets/home/trip-card-image.jpg",
         },
         {
             id: 3,
             title: "Bali",
             duration: "3 Hari, 2 Malam",
             rating: "4,9",
-            image: "/assets/hero-bg.jpg",
+            image: "/assets/home/trip-card-image.jpg",
         },
         {
             id: 4,
             title: "Pontianak, Kalbar",
             duration: "3 Hari, 2 Malam",
             rating: "4,8",
-            image: "/assets/hero-bg.jpg",
+            image: "/assets/home/trip-card-image.jpg",
         },
     ];
 
@@ -51,7 +51,7 @@ export default function Home() {
             rating: "4,9",
             tag: "Berlangsung hingga 3 Okt 2025",
             tagColor: "bg-primary-600",
-            image: "/assets/hero-bg.jpg",
+            image: "/assets/home/jastip/kacang-rostcas.jpg",
         },
         {
             id: 2,
@@ -63,7 +63,7 @@ export default function Home() {
             rating: "4,9",
             tag: "Akan Buka 1 Okt 2025",
             tagColor: "bg-danger-600",
-            image: "/assets/hero-bg.jpg",
+            image: "/assets/home/jastip/celana-sontog.jpg",
         },
         {
             id: 3,
@@ -75,7 +75,7 @@ export default function Home() {
             rating: "4,9",
             tag: "Berlangsung hingga 3 Okt 2025",
             tagColor: "bg-primary-600",
-            image: "/assets/hero-bg.jpg",
+            image: "/assets/home/jastip/kacang-rostcas.jpg",
         },
         {
             id: 4,
@@ -87,7 +87,7 @@ export default function Home() {
             rating: "4,9",
             tag: "Akan Buka 1 Okt 2025",
             tagColor: "bg-danger-600",
-            image: "/assets/hero-bg.jpg",
+            image: "/assets/home/jastip/celana-sontog.jpg",
         },
     ];
 

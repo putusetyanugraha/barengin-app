@@ -6,26 +6,26 @@ import JastipCard from "../Cards/JastipCard";
 
 export default function JastipSection({ products }) {
     return (
-        <section className="py-12">
+        <section className="py-12 pt-4">
             <Container>
                 <SectionHeading
                     label="Jasa Titip Terbaru"
                     align="right"
-                    className="mb-8"
+                    className="mb-12"
                 />
 
-                <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-8">
+                <div className="flex flex-col text-center md:text-left md:flex-row justify-between items-center mb-10 gap-4 md:gap-7">
                     <div>
-                        <h2 className="text-3xl font-medium mb-2 text-neutral-700">
+                        <h2 className="text-3xl font-medium leading-normal text-neutral-700">
                             Belanja produk incaranmu
                         </h2>
-                        <h2 className="text-3xl font-medium text-neutral-400">
+                        <h2 className="text-3xl font-medium leading-normal text-neutral-500">
                             diseluruh tempat
                         </h2>
                     </div>
 
-                    <div className="text-right">
-                        <p className="text-sm text-neutral-600 mb-4 max-w-sm ml-auto">
+                    <div className="text-center md:text-right">
+                        <p className="text-sm text-neutral-700 mb-4 max-w-[400px] ml-auto">
                             Titip barang impian dari mana pun dengan mudah,
                             aman, dan praktis langsung sampai ke tangan Anda.
                         </p>
@@ -38,7 +38,7 @@ export default function JastipSection({ products }) {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(200px,1fr))]">
                     {products.map((p) => (
                         <JastipCard key={p.id} product={p} />
                     ))}
