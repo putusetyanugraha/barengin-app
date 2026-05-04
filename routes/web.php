@@ -55,3 +55,8 @@ Route::middleware('auth')->group(function () {
     // Logout 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
+
+
+Route::get('/trip-bareng', function () {
+    return inertia('TripBareng/Index');
+})->name('trip-bareng');

@@ -6,6 +6,7 @@ import Button from "@/Components/Button.jsx";
 import MainLayout from "@/Layouts/MainLayout.jsx";
 import Input from "@/Components/Input.jsx";
 import Checkbox from "@/Components/Checkbox.jsx";
+import { FcGoogle } from "react-icons/fc";
 
 export default function Login() {
     const [hidePassword, setHidePassword] = useState(true);
@@ -127,11 +128,7 @@ export default function Login() {
                                 }
                                 disabled={processing}
                             >
-                                <img
-                                    src="/assets/icons/google.png"
-                                    alt="Google"
-                                    className="h-5 w-5"
-                                />
+                                <FcGoogle size={20}/>
                                 Login with Google
                             </Button>
 
