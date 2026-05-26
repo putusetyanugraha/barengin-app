@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Midtrans\Config;
+use Midtrans\Snap;
 
 class TripsController extends Controller
 {
@@ -113,11 +116,11 @@ class TripsController extends Controller
         });
 
         // 4. Ambil fasilitas (Included)
-        $included = DB::table('trip_facilities')
+        $facilities = DB::table('trip_facilities')
             ->join('facilities', 'trip_facilities.facility_id', '=', 'facilities.id')
             ->where('trip_facilities.trip_id', $id)
-            ->pluck('facilities.name')
-            ->toArray();
+            ->select('facilities.name', 'facilities.icon')
+            ->get();
 
         $startDate = Carbon::parse($trip->start_date);
         $endDate = Carbon::parse($trip->end_date);
@@ -139,7 +142,7 @@ class TripsController extends Controller
                 'avatar' => $trip->profile_image ?? '/assets/default-avatar.png'
             ],
             'itinerary' => $itinerary,
-            'included' => $included 
+            'facilities' => $facilities
         ];
 
         return Inertia::render('TripBareng/Detail', [
@@ -170,22 +173,80 @@ class TripsController extends Controller
         ]);
     }
 
-    public function payment($id)
+    // Ini Fungsi Payment
+    public function processPayment(Request $request, $id)
     {
         $trip = DB::table('trips')->where('id', $id)->first();
         if (!$trip) abort(404);
 
-        $paymentData = [
-            'trip_id' => $id,
-            'total_amount' => (float) $trip->price + 10000, 
-            'due_date' => Carbon::now()->addHours(24)->format('d F Y, H:i'),
-            'bank_name' => 'BCA Virtual Account',
-            'va_number' => '123 456 789 123',
-        ];
+        // Ambil data user yang sedang login (Fallback ke user dummy jika belum login)
+        $user = $request->user();
+        $user_id = $user ? $user->id : DB::table('users')->first()->id;
+        $name = $user ? $user->full_name : 'Budi Penumpang';
+        $email = $user ? $user->email : 'budi@barengin.com';
+        $phone = $user ? $user->phone : '081234567890';
 
-        return Inertia::render('TripBareng/WaitingPayment', [
-            'paymentData' => $paymentData,
+        // Hitung total harga (+ Biaya admin contoh 10rb)
+        $quantity = $request->input('quantity', 1);
+        $total_amount = ($trip->price * $quantity) + 10000; 
+
+        // 1. Buat Transaksi di tabel mu
+        $transactionId = (string) Str::uuid();
+        
+        DB::table('transactions')->insert([
+            'id' => $transactionId,
+            'user_id' => $user_id,
+            'total_amount' => $total_amount,
+            'type' => 'trip',
+            'payment_method' => 'Midtrans',
+            'va_number' => '', // Dikosongkan karena pakai Midtrans
+            'expired_at' => now()->addHours(24),
+            'created_at' => now(),
+            'updated_at' => now()
         ]);
+
+        DB::table('trip_orders')->insert([
+            'transaction_id' => $transactionId,
+            'trip_id' => $id,
+            'user_id' => $user_id,
+            'quantity' => $quantity,
+            'total' => $total_amount,
+            'order_status' => 'pending',
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        // 2. Konfigurasi Midtrans
+        // (Pastikan Server Key ini diubah ke milikmu di .env nantinya)
+        Config::$serverKey = env('MIDTRANS_SERVER_KEY', 'SB-Mid-server-xxxxxxxxx');
+        Config::$isProduction = false;
+        Config::$isSanitized = true;
+        Config::$is3ds = true;
+
+        $params = array(
+            'transaction_details' => array(
+                'order_id' => $transactionId,
+                'gross_amount' => $total_amount,
+            ),
+            'customer_details' => array(
+                'first_name' => $name,
+                'email' => $email,
+                'phone' => $phone,
+            ),
+        );
+
+        try {
+            // 3. Dapatkan Snap Token dari Midtrans
+            $snapToken = Snap::getSnapToken($params);
+            
+            // Kembalikan token ke React
+            return response()->json([
+                'snap_token' => $snapToken,
+                'transaction_id' => $transactionId
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     public function success($id)
@@ -196,13 +257,16 @@ class TripsController extends Controller
         $startDate = Carbon::parse($trip->start_date);
         $endDate = Carbon::parse($trip->end_date);
 
+        // [PERBAIKAN] Ambil jumlah partisipan asli yang sudah tergabung di trip ini dari DB
+        $joined = DB::table('trip_participants')->where('trip_id', $trip->id)->count();
+
         $order = [
             'transaction_id' => 'OTRIP-' . str_pad($id, 6, '0', STR_PAD_LEFT),
             'trip_title' => $trip->name,
             'date_range' => $startDate->format('d M') . ' - ' . $endDate->format('d M Y'),
             'quantity' => 1,
             'image' => $trip->image ?? '/assets/trips/bromo.jpg',
-            'friends_waiting' => rand(3, 15),
+            'friends_waiting' => $joined, // <-- Ganti rand(3, 15) menjadi data asli ($joined)
         ];
 
         return Inertia::render('TripBareng/Success', [

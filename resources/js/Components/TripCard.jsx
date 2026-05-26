@@ -20,10 +20,10 @@ export default function TripCard({ trip }) {
         rating,
         price,
         guide,
-        guide_avatar,    // Data baru dari Controller
+        guide_avatar, // Data baru dari Controller
         guide_badge,
-        guide_rating,    // Data baru dari Controller
-        guide_reviews,   // Data baru dari Controller
+        guide_rating, // Data baru dari Controller
+        guide_reviews, // Data baru dari Controller
         image,
         liked,
     } = trip;
@@ -36,14 +36,17 @@ export default function TripCard({ trip }) {
                     src={image}
                     alt={title}
                     className="h-44 w-full object-cover"
-                    onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?q=80&w=2071&auto=format&fit=crop"; }}
+                    onError={(e) => {
+                        e.target.src =
+                            "https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?q=80&w=2071&auto=format&fit=crop";
+                    }}
                 />
                 <button className="absolute right-3 top-3 bg-white/90 rounded-full p-2 shadow z-10 hover:scale-105 transition-transform">
                     <FaHeart
                         className={`h-5 w-5 ${liked ? "text-red-500" : "text-gray-400"}`}
                     />
                 </button>
-                
+
                 {/* [PERBAIKAN 1]: SISA KURSI DINAMIS */}
                 <div className="absolute left-3 bottom-3 bg-neutral-800/80 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 font-medium z-10">
                     <BsLightningFill className="text-yellow-400" />
@@ -55,7 +58,9 @@ export default function TripCard({ trip }) {
             <div className="p-5">
                 {/* Judul & Lokasi */}
                 <div className="mb-4 space-y-1">
-                    <h3 className="text-xl font-bold text-gray-900 line-clamp-1">{title}</h3>
+                    <h3 className="text-xl font-bold text-gray-900 line-clamp-1">
+                        {title}
+                    </h3>
                     <div className="flex items-center gap-1.5 text-sm text-gray-600 font-medium">
                         <FaMapMarkerAlt className="text-primary-600" />
                         <p>{location}</p>
@@ -64,33 +69,61 @@ export default function TripCard({ trip }) {
 
                 {/* Grid Info */}
                 <div className="grid grid-cols-3 gap-2 text-xs text-gray-600 divide-x divide-dashed divide-gray-300">
-                    <div className="flex flex-col gap-1.5 pl-1">
+                    {/* --- KOLOM TANGGAL --- */}
+                    <div className="flex flex-col gap-1.5 pl-1 min-w-0">
                         <div className="flex items-center gap-1 text-neutral-500 font-medium">
-                            <MdDateRange size={16} className="text-neutral-400" />
-                            Tanggal Trip
+                            <MdDateRange
+                                size={14}
+                                className="text-neutral-400 shrink-0"
+                            />
+                            <span className="truncate">Tanggal Trip</span>
                         </div>
-                        <p className="text-neutral-800 font-semibold leading-tight pr-2">
-                            {date}
-                        </p>
+
+                        {/* PERBAIKAN: Memecah string menjadi 2 baris span yang masing-masing di-truncate */}
+                        <div className="flex flex-col min-w-0" title={date}>
+                            <span className="text-neutral-800 font-semibold leading-tight pr-1.5 truncate">
+                                {date?.split(" (")[0]}{" "}
+                                {/* Ini akan mengambil "13 Jul 26 - 16 Jul 26" */}
+                            </span>
+                            {date?.includes("(") && (
+                                <span className="text-neutral-600 font-medium leading-tight truncate">
+                                    ({date?.split(" (")[1]}{" "}
+                                    {/* Ini akan mengambil "(3 Days)" */}
+                                </span>
+                            )}
+                        </div>
                     </div>
-                    
-                    <div className="flex flex-col gap-1.5 pl-3">
+
+                    {/* --- KOLOM KAPASITAS --- */}
+                    <div className="flex flex-col gap-1.5 pl-1 min-w-0">
                         <div className="flex items-center gap-1 text-neutral-500 font-medium">
-                            <MdPeopleAlt size={16} className="text-primary-500" />
-                            Kapasitas
+                            <MdPeopleAlt
+                                size={14}
+                                className="text-primary-500 shrink-0"
+                            />
+                            <span className="truncate">Kapasitas</span>
                         </div>
-                        <p className="text-neutral-800 font-semibold">
+                        <p
+                            className="text-neutral-800 font-semibold leading-tight line-clamp-2"
+                            title={capacity}
+                        >
                             {capacity}
                         </p>
                     </div>
-                    
-                    <div className="flex flex-col gap-1.5 pl-3">
+
+                    {/* --- KOLOM RATING --- */}
+                    <div className="flex flex-col gap-1.5 pl-1 min-w-0">
                         <div className="flex items-center gap-1 text-neutral-500 font-medium">
-                            <FaStar size={14} className="text-yellow-400" />
-                            Rating Trip
+                            <FaStar
+                                size={14}
+                                className="text-yellow-400 shrink-0"
+                            />
+                            <span className="truncate">Rating Trip</span>
                         </div>
-                        {/* [PERBAIKAN 2]: RATING TRIP DINAMIS */}
-                        <p className="text-neutral-800 font-semibold">
+                        <p
+                            className="text-neutral-800 font-semibold leading-tight line-clamp-2"
+                            title={rating}
+                        >
                             {rating}
                         </p>
                     </div>
@@ -111,23 +144,27 @@ export default function TripCard({ trip }) {
                         <div className="min-w-0">
                             {/* [PERBAIKAN 3]: NAMA GUIDE TERPOTONG (TRUNCATE) */}
                             <div className="font-bold text-gray-900 flex items-center gap-1 text-sm">
-                                <span className="truncate">{guide}</span>
+                                <span className="truncate max-w-[84px]">
+                                    {guide}
+                                </span>
                                 <MdVerified className="text-blue-500 shrink-0 size-4" />
                             </div>
-                            
+
                             <div className="text-orange-500 text-xs font-semibold mt-0.5">
                                 {guide_badge}
                             </div>
-                            
+
                             {/* [PERBAIKAN 4]: RATING GUIDER DITAMBAHKAN */}
                             <div className="flex items-center gap-1 mt-0.5 text-[11px] font-medium text-neutral-500">
                                 <FaStar className="text-yellow-400 size-3" />
-                                <span className="text-neutral-900 font-bold">{guide_rating}</span>
+                                <span className="text-neutral-900 font-bold">
+                                    {guide_rating}
+                                </span>
                                 <span>({guide_reviews} ulasan)</span>
                             </div>
                         </div>
                     </div>
-                    
+
                     <Button
                         size="xs"
                         variant="outline"
@@ -147,7 +184,12 @@ export default function TripCard({ trip }) {
                             / orang
                         </span>
                     </div>
-                    <Button size="sm" isButtonLink={true} href={`/trip-bareng/${trip.id}`} className="px-4 py-2">
+                    <Button
+                        size="sm"
+                        isButtonLink={true}
+                        href={`/trip-bareng/${trip.id}`}
+                        className="px-4 py-2"
+                    >
                         Ikut Trip
                     </Button>
                     {/* <Link 

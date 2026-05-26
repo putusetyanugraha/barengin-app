@@ -3,6 +3,7 @@ import { Head, Link } from "@inertiajs/react"; // Tambahkan Link di sini
 import Container from "@/Components/Container";
 import Button from "@/Components/Button";
 import MainLayout from "@/Layouts/MainLayout";
+
 import {
     FaMapMarkerAlt,
     FaRegCalendarAlt,
@@ -10,32 +11,33 @@ import {
     FaCarSide,
     FaBed,
     FaUtensils,
+    FaCamera,
     FaArrowRight,
     FaRegHeart,
-    FaChevronLeft // Tambahkan icon ChevronLeft
+    FaChevronLeft,
+    FaTicketAlt,
+    FaUserTie,
 } from "react-icons/fa";
 import { BsChatText } from "react-icons/bs";
 import { IoMdInformationCircleOutline } from "react-icons/io";
 
 export default function Detail({ trip }) {
-    const currentTrip = trip; // Asumsikan data trip sudah valid dari backend
+    const currentTrip = trip;
+
+    const IconMap = {
+        'FaCarSide': FaCarSide,
+        'FaBed': FaBed,
+        'FaUtensils': FaUtensils,
+        'FaCamera': FaCamera,
+        'FaTicketAlt': FaTicketAlt,
+        'FaUserTie': FaUserTie,
+    };
 
     return (
         <div className="min-h-screen bg-white pb-32">
             <Head title={`Trip ${currentTrip.title} - Barengin`} />
 
             <Container className="pt-6">
-                
-                {/* --- TOMBOL KEMBALI (OPSI 1: Di luar gambar, teks biasa) --- */}
-                {/* Kalau kamu lebih suka di luar gambar, uncomment ini dan hapus tombol melayang di bawah: 
-                <div className="mb-4">
-                    <Link href="/trip-bareng" className="inline-flex items-center gap-2 text-neutral-600 hover:text-primary-700 font-medium transition">
-                        <FaChevronLeft className="text-sm" />
-                        Kembali ke Daftar Trip
-                    </Link>
-                </div>
-                */}
-
                 {/* --- HERO SECTION --- */}
                 <div className="relative h-[350px] md:h-[400px] w-full rounded-3xl overflow-hidden mb-10 shadow-sm">
                     <img
@@ -50,8 +52,8 @@ export default function Detail({ trip }) {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
 
                     {/* --- TOMBOL KEMBALI MELAYANG (OPSI 2: Paling Bagus) --- */}
-                    <Link 
-                        href="/trip-bareng" 
+                    <Link
+                        href="/trip-bareng"
                         className="absolute top-6 left-6 md:top-8 md:left-8 z-10 w-10 h-10 bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/40 rounded-full flex items-center justify-center text-white transition-all shadow-sm"
                         aria-label="Kembali"
                     >
@@ -105,7 +107,7 @@ export default function Detail({ trip }) {
                         {/* Deskripsi */}
                         <section>
                             <h2 className="text-2xl font-bold text-neutral-900 mb-4">
-                                Tentang Trip {currentTrip.title}
+                                Tentang {currentTrip.title}
                             </h2>
                             <div className="flex items-center gap-2 text-sm text-neutral-700 font-medium mb-5 bg-neutral-50 p-3.5 rounded-xl border border-neutral-200">
                                 <FaRegCalendarAlt className="text-neutral-500 text-lg" />
@@ -257,18 +259,32 @@ export default function Detail({ trip }) {
                             </div>
 
                             <div className="space-y-4 mb-6">
-                                <div className="flex items-center gap-3 text-sm text-neutral-700 font-medium">
-                                    <FaCarSide className="text-neutral-500 text-lg shrink-0" />
-                                    Perjalanan bandara
-                                </div>
-                                <div className="flex items-center gap-3 text-sm text-neutral-700 font-medium">
-                                    <FaBed className="text-neutral-500 text-lg shrink-0" />
-                                    Hotel Bawangan
-                                </div>
-                                <div className="flex items-center gap-3 text-sm text-neutral-700 font-medium">
-                                    <FaUtensils className="text-neutral-500 text-lg shrink-0" />
-                                    Sarapan setiap hari dan makan malam
-                                </div>
+                                {currentTrip.facilities &&
+                                currentTrip.facilities.length > 0 ? (
+                                    currentTrip.facilities.map(
+                                        (facility, index) => {
+                                            const IconComponent =
+                                                IconMap[facility.icon] ||
+                                                FaCarSide;
+
+                                            return (
+                                                <div
+                                                    key={index}
+                                                    className="flex items-center gap-3 text-sm text-neutral-700 font-medium"
+                                                >
+                                                    <IconComponent className="text-neutral-400 text-[17px] shrink-0" />
+                                                    {facility.name}
+                                                </div>
+                                            );
+                                        },
+                                    )
+                                ) : (
+                                    // Tampilan jika trip ini tidak memiliki fasilitas (kosong)
+                                    <p className="text-sm text-neutral-500 italic">
+                                        Tidak ada fasilitas khusus (Backpacker
+                                        Style)
+                                    </p>
+                                )}
                             </div>
 
                             <div className="bg-orange-50 border border-orange-200/60 rounded-xl p-4 flex items-start gap-3">
@@ -314,7 +330,7 @@ export default function Detail({ trip }) {
                         <div className="flex items-center gap-3">
                             <Button
                                 isButtonLink
-                                href={`/trip-bareng/${trip.id}/checkout`} 
+                                href={`/trip-bareng/${trip.id}/checkout`}
                                 type="primary"
                                 size="md"
                                 className="px-6 md:px-8 font-semibold gap-2 shadow-sm rounded-xl"

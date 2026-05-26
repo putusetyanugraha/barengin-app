@@ -32,7 +32,7 @@ export default function Index({ trips, all_trips }) {
                 className="relative pt-28 pb-32 md:pt-40 md:pb-44 bg-cover bg-center bg-no-repeat"
                 style={{
                     backgroundImage:
-                        "linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6)), url('/assets/trips/hero.jpg')",
+                        "linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6)), url('/assets/trip-bareng/hero-bg.png')",
                 }}
             >
                 <Container className="relative z-10 text-center text-white px-4">
