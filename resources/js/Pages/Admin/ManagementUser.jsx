@@ -64,9 +64,7 @@ export default function ManagementUser({ users = [] }) {
                 id: user.id,
                 name: user.full_name,
                 email: user.email,
-                verified:
-                    user.email_verified_at !== null &&
-                    user.email_verified_at !== undefined,
+                verified: user.is_verified === 1 || user.is_verified === true,
                 initials: getInitials(user.full_name),
                 bg: getRandomBg(user.id),
                 roles: userRoles,
@@ -261,7 +259,7 @@ export default function ManagementUser({ users = [] }) {
                                                         {user.name}
                                                     </span>
                                                     {user.verified && (
-                                                        <FaCircleCheck className="text-[#0077D3] text-sm" />
+                                                        <FaCircleCheck className="text-[#0077D3] text-sm flex-shrink-0" />
                                                     )}
                                                 </div>
                                             </div>

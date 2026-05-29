@@ -196,23 +196,16 @@ Route::prefix('Admin')->group(function () {
     })->name('management-user.edit');
 
     // Rute untuk Menyimpan Perubahan (Save User)
-    Route::put('/management-user/{id}', function (\Illuminate\Http\Request $request, $id) {
+Route::put('/management-user/{id}', function (\Illuminate\Http\Request $request, $id) {
         $user = \App\Models\User::findOrFail($id);
         
-        // Update role
+        // Update role & verified status langsung ke kolom is_verified
         $user->update([
             'is_admin' => $request->is_admin,
             'is_guider' => $request->is_guider,
             'is_jastiper' => $request->is_jastiper,
+            'is_verified' => $request->verified, // 👈 Pakai kolom boolean-mu
         ]);
-
-        // Logika verifikasi: kalau true set jam sekarang, kalau false set jadi null
-        if ($request->verified && is_null($user->email_verified_at)) {
-            $user->email_verified_at = now();
-        } elseif (!$request->verified) {
-            $user->email_verified_at = null;
-        }
-        $user->save();
 
         return redirect()->route('management-user')->with('success', 'User berhasil diupdate!');
     });

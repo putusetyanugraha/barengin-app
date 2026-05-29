@@ -19,7 +19,7 @@ export default function EditUser({ user }) {
         is_jastiper: false,
         is_guider: false,
         is_admin: false,
-        email_verified_at: null,
+        is_verified: false,
     };
 
     // Inertia useForm untuk menghandle data yang BISA diubah (Roles & Verification)
@@ -27,7 +27,7 @@ export default function EditUser({ user }) {
         is_jastiper: safeUser.is_jastiper,
         is_guider: safeUser.is_guider,
         is_admin: safeUser.is_admin,
-        verified: safeUser.email_verified_at !== null,
+        verified: safeUser.is_verified === 1 || safeUser.is_verified === true,
     });
 
     // State untuk Modal Verifikasi
