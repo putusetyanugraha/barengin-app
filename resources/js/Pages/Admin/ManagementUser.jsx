@@ -1,12 +1,12 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { Head } from "@inertiajs/react";
+import { Head, Link, router } from "@inertiajs/react";
 import AdminLayout from "@/Layouts/AdminLayout";
 import Pagination from "@/Components/Pagination";
 
-import { FiSearch, FiTrash2, FiEdit2 } from "react-icons/fi";
+import { FiSearch, FiTrash2, FiEdit2, FiAlertCircle } from "react-icons/fi";
 import { FaCircleCheck } from "react-icons/fa6";
 
-// Fungsi untuk bikin Inisial Nama (Misal: "Budi Penumpang" jadi "BP")
+// Helper: Inisial Nama
 const getInitials = (name) => {
     if (!name) return "U";
     const words = name.split(" ");
@@ -16,7 +16,7 @@ const getInitials = (name) => {
     return name.substring(0, 2).toUpperCase();
 };
 
-// Fungsi untuk bikin warna acak buat background inisial
+// Helper: Background Acak
 const getRandomBg = (id) => {
     const colors = [
         "bg-blue-100 text-blue-600",
@@ -26,90 +26,177 @@ const getRandomBg = (id) => {
         "bg-orange-100 text-orange-600",
         "bg-pink-100 text-pink-600",
     ];
-    // Pastikan id adalah angka, fallback ke 0 kalau undefiend
-    const safeId = parseInt(id) || 0; 
-    return colors[safeId % colors.length]; 
+    const safeId = parseInt(id) || 0;
+    return colors[safeId % colors.length];
 };
 
-export default function ManagementUser({ users = [] }) { 
-    // Menerima data dari Controller (web.php)
-
+export default function ManagementUser({ users = [] }) {
     const [searchQuery, setSearchQuery] = useState("");
     const [filterRole, setFilterRole] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
 
+    // ==========================================
+    // STATE UNTUK MODAL POPUP DELETE
+    // ==========================================
+    const [deleteModal, setDeleteModal] = useState({
+        isOpen: false,
+        userId: null,
+        userName: "",
+    });
+
     useEffect(() => {
         setCurrentPage(1);
     }, [searchQuery, filterRole]);
 
-    // ==========================================
-    // PENYESUAIAN STRUKTUR DATA DATABASE
-    // ==========================================
+    // Format Data
     const formattedUsers = useMemo(() => {
         if (!users || users.length === 0) return [];
 
-        return users.map(user => {
-            // Menerjemahkan kolom boolean (is_admin, dll) menjadi array string untuk badge
+        return users.map((user) => {
             const userRoles = [];
             if (user.is_admin) userRoles.push("Admin");
             if (user.is_guider) userRoles.push("Guider");
             if (user.is_jastiper) userRoles.push("Jastiper");
-            
-            // Kalau false semua, kita kasih label default "User Biasa"
             if (userRoles.length === 0) userRoles.push("User Biasa");
 
             return {
                 id: user.id,
-                name: user.full_name, // Menggunakan full_name dari seeder
+                name: user.full_name,
                 email: user.email,
-                // Mengecek status verifikasi dari kolom email_verified_at (berdasarkan file Factory)
-                verified: user.email_verified_at !== null && user.email_verified_at !== undefined, 
+                verified:
+                    user.email_verified_at !== null &&
+                    user.email_verified_at !== undefined,
                 initials: getInitials(user.full_name),
                 bg: getRandomBg(user.id),
-                roles: userRoles
+                roles: userRoles,
             };
         });
     }, [users]);
 
-    // Logika Filter & Pencarian
+    // Filter & Search
     const filteredUsers = useMemo(() => {
         return formattedUsers.filter((user) => {
             const matchSearch =
-                (user.name && user.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-                (user.email && user.email.toLowerCase().includes(searchQuery.toLowerCase()));
-            const matchRole = filterRole ? user.roles.includes(filterRole) : true;
+                (user.name &&
+                    user.name
+                        .toLowerCase()
+                        .includes(searchQuery.toLowerCase())) ||
+                (user.email &&
+                    user.email
+                        .toLowerCase()
+                        .includes(searchQuery.toLowerCase()));
+            const matchRole = filterRole
+                ? user.roles.includes(filterRole)
+                : true;
             return matchSearch && matchRole;
         });
     }, [searchQuery, filterRole, formattedUsers]);
 
+    // Pagination
     const totalPages = Math.ceil(filteredUsers.length / itemsPerPage) || 1;
     const paginatedUsers = filteredUsers.slice(
         (currentPage - 1) * itemsPerPage,
         currentPage * itemsPerPage
     );
 
+    // ==========================================
+    // LOGIKA HAPUS (MEMBUKA MODAL LALU EKSEKUSI)
+    // ==========================================
+    
+    // 1. Fungsi saat tombol tong sampah diklik (buka popup)
+    const openDeleteModal = (userId, userName) => {
+        setDeleteModal({
+            isOpen: true,
+            userId: userId,
+            userName: userName,
+        });
+    };
+
+    // 2. Fungsi saat tombol "Ya, Hapus" di dalam popup diklik
+    const confirmDelete = () => {
+        router.delete(`/Admin/management-user/${deleteModal.userId}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                // Tutup popup setelah berhasil dihapus
+                setDeleteModal({ isOpen: false, userId: null, userName: "" });
+            },
+        });
+    };
+
+    // 3. Fungsi saat tombol "Batal" atau luar kotak diklik
+    const closeDeleteModal = () => {
+        setDeleteModal({ isOpen: false, userId: null, userName: "" });
+    };
+
     const renderRoleBadge = (role, idx) => {
         let colorClasses = "";
         if (role === "Jastiper") colorClasses = "bg-green-100 text-green-700";
         else if (role === "Guider") colorClasses = "bg-orange-100 text-orange-700";
         else if (role === "Admin") colorClasses = "bg-blue-100 text-[#0077D3]";
-        else colorClasses = "bg-gray-100 text-gray-600"; // Untuk "User Biasa"
+        else colorClasses = "bg-gray-100 text-gray-600";
 
         return (
-            <span key={idx} className={`px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-semibold ${colorClasses}`}>
+            <span
+                key={idx}
+                className={`px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-semibold ${colorClasses}`}
+            >
                 {role}
             </span>
         );
     };
 
     return (
-        <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden flex flex-col h-full min-h-[500px]">
+        <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden flex flex-col h-full min-h-[500px] relative">
             <Head title="Manajemen User" />
+
+            {/* ==========================================
+                KODE POPUP / MODAL DELETE
+            ========================================== */}
+            {deleteModal.isOpen && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 transition-all">
+                    {/* Kotak Modal */}
+                    <div 
+                        className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-fade-in-up"
+                    >
+                        <div className="p-6 text-center">
+                            {/* Icon Warning */}
+                            <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <FiAlertCircle size={32} />
+                            </div>
+                            
+                            <h3 className="text-xl font-bold text-neutral-900 mb-2">Hapus User?</h3>
+                            
+                            <p className="text-neutral-500 text-sm mb-6 leading-relaxed">
+                                Apakah kamu yakin ingin menghapus <br/>
+                                <span className="font-bold text-neutral-900">{deleteModal.userName}</span>? <br/>
+                                {/* Tindakan ini tidak dapat dibatalkan. */}
+                            </p>
+                            
+                            <div className="flex items-center gap-3">
+                                <button
+                                    onClick={closeDeleteModal}
+                                    className="flex-1 px-4 py-2.5 rounded-xl border border-neutral-200 text-neutral-600 font-semibold hover:bg-neutral-50 transition-colors"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    onClick={confirmDelete}
+                                    className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 shadow-sm transition-colors"
+                                >
+                                    Ya, Hapus
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="p-4 sm:p-6 border-b border-neutral-100">
                 <div className="mb-4 sm:mb-6">
-                    <h2 className="text-xl sm:text-2xl font-bold text-neutral-900 mb-1">Manajemen User</h2>
+                    <h2 className="text-xl sm:text-2xl font-bold text-neutral-900 mb-1">
+                        Manajemen User
+                    </h2>
                     <p className="text-neutral-500 text-xs sm:text-sm">
                         Tempat dimana admin mengatur semua user dalam Barengin.
                     </p>
@@ -133,14 +220,16 @@ export default function ManagementUser({ users = [] }) {
                             onChange={(e) => setFilterRole(e.target.value)}
                             className="w-full pl-4 pr-10 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm focus:ring-2 focus:ring-[#0077D3] outline-none cursor-pointer appearance-none transition-all"
                         >
-                            <option value="">Semua</option>
+                            <option value="">Filter By (Semua)</option>
                             <option value="Jastiper">Jastiper</option>
                             <option value="Guider">Guider</option>
                             <option value="Admin">Admin</option>
                             <option value="User Biasa">User Biasa</option>
                         </select>
                         <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-500">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
                         </div>
                     </div>
                 </div>
@@ -182,17 +271,30 @@ export default function ManagementUser({ users = [] }) {
                                         </td>
                                         <td className="py-4 px-6">
                                             <div className="flex flex-wrap gap-2">
-                                                {user.roles.map((role, idx) => renderRoleBadge(role, idx))}
+                                                {user.roles.map((role, idx) =>
+                                                    renderRoleBadge(role, idx)
+                                                )}
                                             </div>
                                         </td>
                                         <td className="py-4 px-6 text-center">
                                             <div className="flex items-center justify-center gap-2">
-                                                <button className="p-2 bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600 rounded-lg transition-colors" title="Hapus User">
+                                                {/* TOMBOL DELETE (Panggil Popup) */}
+                                                <button
+                                                    onClick={() => openDeleteModal(user.id, user.name)}
+                                                    className="p-2 bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600 rounded-lg transition-colors cursor-pointer"
+                                                    title="Hapus User"
+                                                >
                                                     <FiTrash2 size={16} />
                                                 </button>
-                                                <button className="p-2 bg-orange-50 text-orange-500 hover:bg-orange-100 hover:text-orange-600 rounded-lg transition-colors" title="Edit User">
+                                                
+                                                {/* TOMBOL EDIT */}
+                                                <Link
+                                                    href={`/Admin/management-user/${user.id}/edit-role`}
+                                                    className="p-2 bg-orange-50 text-orange-500 hover:bg-orange-100 hover:text-orange-600 rounded-lg transition-colors inline-flex items-center justify-center"
+                                                    title="Edit Role User"
+                                                >
                                                     <FiEdit2 size={16} />
-                                                </button>
+                                                </Link>
                                             </div>
                                         </td>
                                     </tr>
@@ -234,13 +336,21 @@ export default function ManagementUser({ users = [] }) {
 
                                 <div className="flex items-center justify-between mt-2">
                                     <div className="flex flex-wrap gap-1.5 flex-1 pr-4">
-                                        {user.roles.map((role, idx) => renderRoleBadge(role, idx))}
+                                        {user.roles.map((role, idx) =>
+                                            renderRoleBadge(role, idx)
+                                        )}
                                     </div>
                                     <div className="flex items-center gap-2 flex-shrink-0">
-                                        <button className="p-2 bg-orange-50 text-orange-500 hover:bg-orange-100 hover:text-orange-600 rounded-lg transition-colors">
+                                        <Link
+                                            href={`/Admin/management-user/${user.id}/edit-role`}
+                                            className="p-2 bg-orange-50 text-orange-500 hover:bg-orange-100 hover:text-orange-600 rounded-lg transition-colors inline-flex"
+                                        >
                                             <FiEdit2 size={16} />
-                                        </button>
-                                        <button className="p-2 bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600 rounded-lg transition-colors">
+                                        </Link>
+                                        <button
+                                            onClick={() => openDeleteModal(user.id, user.name)}
+                                            className="p-2 bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600 rounded-lg transition-colors cursor-pointer"
+                                        >
                                             <FiTrash2 size={16} />
                                         </button>
                                     </div>
@@ -259,16 +369,19 @@ export default function ManagementUser({ users = [] }) {
                 <div className="text-xs text-neutral-500 font-medium text-center md:text-left">
                     Showing {paginatedUsers.length} of {filteredUsers.length} entries
                 </div>
-
-                <Pagination 
+                <Pagination
                     currentPage={currentPage}
                     totalPages={totalPages}
                     onPageChange={setCurrentPage}
-                    className="mt-0" 
+                    className="mt-0"
                 />
             </div>
         </div>
     );
 }
 
-ManagementUser.layout = (page) => <AdminLayout title="Dasbor - Admin" subtitle="Selamat datang, Admin!">{page}</AdminLayout>;
+ManagementUser.layout = (page) => (
+    <AdminLayout title="Dasbor - Admin" subtitle="Selamat datang, Admin!">
+        {page}
+    </AdminLayout>
+);

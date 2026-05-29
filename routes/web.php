@@ -165,11 +165,56 @@ Route::get('/trip-bareng/{id}/success', [\App\Http\Controllers\TripsController::
 //     return inertia('Admin/ManagementUser', ['users' => $users]);
 // })->name('management-user');
 
-Route::get('/management-user', function () {
-    return inertia('Admin/ManagementUser', ['users' => \App\Models\User::all()]);
-})->name('management-user');
+Route::prefix('Admin')->group(function () {
+    
+    Route::get('/', function () {
+        return inertia('Admin/Test');
+    })->name('admin'); 
 
-// test route
-Route::get('/Admin', function () {
-    return inertia('Admin/Test');
-})->name('admin'); 
+    Route::get('/management-user', function () {
+        return inertia('Admin/ManagementUser', ['users' => \App\Models\User::all()]);
+    })->name('management-user');
+    
+    // Rute untuk Halaman Edit
+    Route::get('/management-user/{id}/edit-role', function ($id) {
+    // Return inertia page form edit-nya di sini
+    })->name('management-user.edit');
+
+    // Rute untuk Action Delete
+    Route::delete('/management-user/{id}', function ($id) {
+        \App\Models\User::destroy($id);
+        return redirect()->back(); // Wajib direturn balik supaya tabel di react ke-refresh
+    })->name('management-user.destroy');
+
+// Rute untuk Halaman Edit
+    Route::get('/management-user/{id}/edit-role', function ($id) {
+        $user = \App\Models\User::findOrFail($id);
+        
+        return inertia('Admin/EditUser', [
+            'user' => $user
+        ]);
+    })->name('management-user.edit');
+
+    // Rute untuk Menyimpan Perubahan (Save User)
+    Route::put('/management-user/{id}', function (\Illuminate\Http\Request $request, $id) {
+        $user = \App\Models\User::findOrFail($id);
+        
+        // Update role
+        $user->update([
+            'is_admin' => $request->is_admin,
+            'is_guider' => $request->is_guider,
+            'is_jastiper' => $request->is_jastiper,
+        ]);
+
+        // Logika verifikasi: kalau true set jam sekarang, kalau false set jadi null
+        if ($request->verified && is_null($user->email_verified_at)) {
+            $user->email_verified_at = now();
+        } elseif (!$request->verified) {
+            $user->email_verified_at = null;
+        }
+        $user->save();
+
+        return redirect()->route('management-user')->with('success', 'User berhasil diupdate!');
+    });
+
+});

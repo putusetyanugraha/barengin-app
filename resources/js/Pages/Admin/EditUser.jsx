@@ -1,0 +1,322 @@
+import React, { useState } from "react";
+import { Head, Link, useForm } from "@inertiajs/react";
+import AdminLayout from "@/Layouts/AdminLayout";
+import { FiChevronLeft, FiAlertTriangle } from "react-icons/fi";
+import { FaKey } from "react-icons/fa6"; // Menggunakan FaKey untuk icon verify
+
+export default function EditUser({ user }) {
+    // Karena user data dari backend mungkin null saat pertama render (kalau lupa dipassing),
+    // kita beri fallback default agar tidak error.
+    const safeUser = user || {
+        id: "",
+        full_name: "Kaleb Lister",
+        username: "kaleb.lister",
+        email: "kaleblister@gmail.com",
+        bio: "Everything is good until you eat santan",
+        phone: "+62 89694636303",
+        birth_date: "18/03/2006",
+        profile_image: "/assets/default-profile.png",
+        is_jastiper: false,
+        is_guider: false,
+        is_admin: false,
+        email_verified_at: null,
+    };
+
+    // Inertia useForm untuk menghandle data yang BISA diubah (Roles & Verification)
+    const { data, setData, put, processing } = useForm({
+        is_jastiper: safeUser.is_jastiper,
+        is_guider: safeUser.is_guider,
+        is_admin: safeUser.is_admin,
+        verified: safeUser.email_verified_at !== null,
+    });
+
+    // State untuk Modal Verifikasi
+    const [modalType, setModalType] = useState(null); // 'verify' | 'unverify' | null
+
+    // ==========================================
+    // LOGIKA TOGGLE VERIFICATION
+    // ==========================================
+    const handleToggleClick = () => {
+        // Jika saat ini terverifikasi (true), maka munculkan popup unverify
+        if (data.verified) {
+            setModalType("unverify");
+        } else {
+            // Jika saat ini belum terverifikasi (false), munculkan popup verify
+            setModalType("verify");
+        }
+    };
+
+    const confirmVerificationChange = () => {
+        if (modalType === "verify") {
+            setData("verified", true);
+        } else if (modalType === "unverify") {
+            setData("verified", false);
+        }
+        setModalType(null); // Tutup modal setelah konfirmasi
+    };
+
+    const closeModal = () => setModalType(null);
+
+    // ==========================================
+    // LOGIKA SUBMIT FORM
+    // ==========================================
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        // Kirim perubahan role & verifikasi ke backend
+        put(`/Admin/management-user/${safeUser.id}`);
+    };
+
+    return (
+        <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden min-h-[500px] relative pb-10">
+            <Head title="Edit User" />
+
+            {/* ==========================================
+                MODAL POPUP: VERIFY & UNVERIFY
+            ========================================== */}
+            {modalType && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 transition-all">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-fade-in-up">
+                        <div className="p-6">
+                            {/* Header Modal */}
+                            <div className="flex items-start gap-4 mb-4">
+                                {modalType === "verify" ? (
+                                    <div className="w-12 h-12 bg-[#E1F0FF] text-[#0077D3] rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <FaKey size={20} />
+                                    </div>
+                                ) : (
+                                    <div className="w-12 h-12 bg-red-100 text-red-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <FiAlertTriangle size={24} />
+                                    </div>
+                                )}
+
+                                <div>
+                                    <h3 className="text-lg font-bold text-neutral-900 mb-1">
+                                        {modalType === "verify" ? "Verify User" : "Unverify User"}
+                                    </h3>
+                                    <p className="text-neutral-500 text-sm leading-relaxed">
+                                        {modalType === "verify"
+                                            ? "Confirm verification to mark this user as trusted. Verified users may receive enhanced access and credibility within the app."
+                                            : "Are you sure you want to unverify this user? This will remove their trusted status and any associated privileges."}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Tombol Modal */}
+                            <div className="flex items-center justify-end gap-3 mt-6 bg-neutral-50 -mx-6 -mb-6 p-4 border-t border-neutral-100">
+                                <button
+                                    type="button"
+                                    onClick={closeModal}
+                                    className="px-5 py-2.5 rounded-xl border border-neutral-200 bg-white text-neutral-700 font-semibold hover:bg-neutral-50 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={confirmVerificationChange}
+                                    className={`px-5 py-2.5 rounded-xl font-semibold text-white shadow-sm transition-colors ${
+                                        modalType === "verify"
+                                            ? "bg-[#0077D3] hover:bg-blue-700"
+                                            : "bg-red-600 hover:bg-red-700"
+                                    }`}
+                                >
+                                    {modalType === "verify" ? "Verify User" : "Unverify User"}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ==========================================
+                HEADER HALAMAN
+            ========================================== */}
+            <div className="p-6 border-b border-neutral-100 flex items-center gap-4">
+                <Link
+                    href="/Admin/management-user"
+                    className="p-2 hover:bg-neutral-100 rounded-lg transition-colors text-neutral-600"
+                >
+                    <FiChevronLeft size={24} />
+                </Link>
+                <div>
+                    <h2 className="text-2xl font-bold text-neutral-900">Edit User</h2>
+                    <p className="text-neutral-500 text-sm">Ubah data user aplikasi Barengin</p>
+                </div>
+            </div>
+
+            {/* ==========================================
+                FORM AREA
+            ========================================== */}
+            <form onSubmit={handleSubmit} className="p-6 max-w-3xl">
+                {/* --- Profile Picture --- */}
+                <div className="flex items-center gap-6 mb-8">
+                    <img
+                        src={safeUser.profile_image || "/assets/default-profile.png"}
+                        alt="Profile"
+                        className="w-20 h-20 rounded-2xl object-cover border border-neutral-200"
+                        onError={(e) => { e.target.src = "/assets/default-profile.png"; }}
+                    />
+                    <div>
+                        <h4 className="font-semibold text-neutral-900 mb-1">Profile Picture</h4>
+                        <p className="text-xs text-neutral-500 mb-2">JPG, GIF or PNG. Max Size of 5mb</p>
+                        <button type="button" className="text-[#0077D3] text-sm font-semibold hover:underline">
+                            Remove Image
+                        </button>
+                    </div>
+                </div>
+
+                {/* --- READ ONLY FIELDS (Data Diri) --- */}
+                <div className="space-y-5 mb-8">
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-sm font-semibold text-neutral-700">Full Name</label>
+                        <input
+                            type="text"
+                            value={safeUser.full_name}
+                            disabled
+                            className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-100 text-neutral-500 cursor-not-allowed"
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-sm font-semibold text-neutral-700">Username</label>
+                        <input
+                            type="text"
+                            value={safeUser.username}
+                            disabled
+                            className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-100 text-neutral-500 cursor-not-allowed"
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-sm font-semibold text-neutral-700">Email</label>
+                        <input
+                            type="email"
+                            value={safeUser.email}
+                            disabled
+                            className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-100 text-neutral-500 cursor-not-allowed"
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-sm font-semibold text-neutral-700">Bio</label>
+                        <textarea
+                            value={safeUser.bio}
+                            disabled
+                            rows="3"
+                            className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-100 text-neutral-500 cursor-not-allowed resize-none"
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-sm font-semibold text-neutral-700">Nomor Telepon</label>
+                            <input
+                                type="text"
+                                value={safeUser.phone}
+                                disabled
+                                className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-100 text-neutral-500 cursor-not-allowed"
+                            />
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-sm font-semibold text-neutral-700">Tanggal Lahir</label>
+                            <input
+                                type="text"
+                                value={safeUser.birth_date}
+                                disabled
+                                className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-100 text-neutral-500 cursor-not-allowed"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* --- EDITABLE FIELDS (Roles) --- */}
+                <div className="mb-8">
+                    <label className="text-sm font-semibold text-neutral-700 block mb-3">Roles</label>
+                    <div className="border border-neutral-200 rounded-2xl p-4 flex flex-col gap-3">
+                        
+                        {/* Jastiper Checkbox Card */}
+                        <label className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-colors ${data.is_jastiper ? "border-[#0077D3] bg-blue-50/30" : "border-neutral-200 hover:bg-neutral-50"}`}>
+                            <div>
+                                <div className="font-bold text-neutral-900 text-sm mb-0.5">Jastiper</div>
+                                <div className="text-xs text-neutral-500">User bisa mengoperasikan jastip</div>
+                            </div>
+                            <input
+                                type="checkbox"
+                                checked={data.is_jastiper}
+                                onChange={(e) => setData("is_jastiper", e.target.checked)}
+                                className="w-5 h-5 rounded border-neutral-300 text-[#0077D3] focus:ring-[#0077D3] cursor-pointer"
+                            />
+                        </label>
+
+                        {/* Guider Checkbox Card */}
+                        <label className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-colors ${data.is_guider ? "border-[#0077D3] bg-blue-50/30" : "border-neutral-200 hover:bg-neutral-50"}`}>
+                            <div>
+                                <div className="font-bold text-neutral-900 text-sm mb-0.5">Guider</div>
+                                <div className="text-xs text-neutral-500">User bisa mengoperasikan trip bareng</div>
+                            </div>
+                            <input
+                                type="checkbox"
+                                checked={data.is_guider}
+                                onChange={(e) => setData("is_guider", e.target.checked)}
+                                className="w-5 h-5 rounded border-neutral-300 text-[#0077D3] focus:ring-[#0077D3] cursor-pointer"
+                            />
+                        </label>
+
+                        {/* Admin Checkbox Card */}
+                        <label className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-colors ${data.is_admin ? "border-[#0077D3] bg-blue-50/30" : "border-neutral-200 hover:bg-neutral-50"}`}>
+                            <div>
+                                <div className="font-bold text-neutral-900 text-sm mb-0.5">Admin</div>
+                                <div className="text-xs text-neutral-500">User bisa mempunyai akses admin</div>
+                            </div>
+                            <input
+                                type="checkbox"
+                                checked={data.is_admin}
+                                onChange={(e) => setData("is_admin", e.target.checked)}
+                                className="w-5 h-5 rounded border-neutral-300 text-[#0077D3] focus:ring-[#0077D3] cursor-pointer"
+                            />
+                        </label>
+
+                    </div>
+                </div>
+
+                {/* --- USER VERIFICATION TOGGLE --- */}
+                <div className="mb-10">
+                    <label className="text-sm font-semibold text-neutral-700 block mb-3">User Verification</label>
+                    <div className="flex items-center gap-3">
+                        {/* Custom Tailwind Switch */}
+                        <button
+                            type="button"
+                            onClick={handleToggleClick}
+                            className={`w-12 h-6 rounded-full flex items-center p-1 transition-colors duration-300 ease-in-out focus:outline-none ${
+                                data.verified ? "bg-[#0077D3]" : "bg-neutral-300"
+                            }`}
+                        >
+                            <div
+                                className={`w-4 h-4 bg-white rounded-full shadow-sm transform transition-transform duration-300 ease-in-out ${
+                                    data.verified ? "translate-x-6" : "translate-x-0"
+                                }`}
+                            />
+                        </button>
+                        <span className="text-sm font-medium text-[#0077D3] cursor-pointer" onClick={handleToggleClick}>
+                            {data.verified ? "Click to unverify user" : "Click to verify user"}
+                        </span>
+                    </div>
+                </div>
+
+                {/* --- SUBMIT BUTTON --- */}
+                <button
+                    type="submit"
+                    disabled={processing}
+                    className="px-8 py-3 bg-[#0077D3] text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50"
+                >
+                    Save User
+                </button>
+            </form>
+        </div>
+    );
+}
+
+EditUser.layout = (page) => (
+    <AdminLayout title="Dasbor - Admin" subtitle="Selamat datang, Admin!">
+        {page}
+    </AdminLayout>
+);
