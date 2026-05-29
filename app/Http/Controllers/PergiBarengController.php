@@ -8,19 +8,17 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class PergiBarengController extends Controller
 {
-    /**
-     * Helper untuk memformat data DB agar pas dengan UI React
-     */
-    private function formatTripData($trip)
+
+   private function formatTripData($trip)
     {
         $parsedDate = $trip->time_appointment;
 
-        // KARENA RATING MILIK USER, KITA BUAT STATIS DULU SEMENTARA
-        $avgRating = 5.0; 
-        $totalReviews = 10;
+        $avgRating = $trip->initiator?->allRating() ?? 0;
+        $totalReviews = $trip->initiator?->user_ratings?->count() ?? 0;
 
         return [
             'id' => $trip->id,
@@ -31,55 +29,68 @@ class PergiBarengController extends Controller
             'capacity' => $trip->people_amount,
             'joined' => $trip->pergi_bareng_participants->count(),
             'description' => $trip->description,
+            'img_name' => $trip->img_name,
             'details' => [
                 'titik_kumpul' => $trip->departure_loc,
                 'titik_tujuan' => $trip->destination_loc,
                 'transportasi' => $trip->transportation,
                 'jam_kumpul' => $parsedDate->format('H:i'),
             ],
-            // Data Penyelenggara / Initiator
+
             'organizer' => [
-                // PERBAIKAN: Gunakan full_name
-                'name' => $trip->initiator->full_name ?? 'Bagus Arya',
-                'avatar' => $trip->initiator->profile_photo_url ?? '/assets/default-avatar.png',
+                'name' => $trip->initiator?->name ?? 'Penyelenggara',
+                'avatar' => $trip->initiator?->profile_photo_url ?? '/assets/default-avatar.png',
                 'rating' => number_format($avgRating, 1), 
-                'reviews' => $totalReviews,
+                'reviews' => (int)$totalReviews,
                 'verified' => true,
             ],
-            // Data Partisipan
             'participants' => $trip->pergi_bareng_participants->map(function ($p) {
+                // Hitung umur
+                $age = '?'; // Default jika kosong
+                if ($p->birth_date) {
+                    $age = Carbon::parse($p->birth_date)->age; // Ini akan menghasilkan angka saja (misal: 25)
+                }
+                
                 return [
                     'name' => $p->full_name,
-                    'age' => 20, 
+                    'age' => $age, // <-- Cukup kirim angkanya saja atau '?'
                     'rating' => 5.0, 
                     'avatar' => $p->user ? ($p->user->profile_photo_url ?? '/assets/default-avatar.png') : '/assets/default-avatar.png',
-                    'verified' => $p->user_id ? true : false 
+                    'verified' => $p->user_id ? true : false
                 ];
             }),
         ];
     }
     
-    public function index()
-    {   
-        
-        // 1. Ambil data trip dari database beserta relasinya (TANPA pergi_bareng_ratings)
-        $trips = PergiBareng::with(['initiator', 'pergi_bareng_participants'])
-            ->latest() 
-            ->get();
-        
-        // 2. Format data
+    public function index(Request $request)
+    {
+        // 1. Tangkap parameter 'sort' dari React
+        $sortBy = $request->query('sort', 'schedule');
+
+        // 2. Siapkan query dasar beserta relasinya
+        $query = PergiBareng::with(['initiator.user_ratings', 'pergi_bareng_participants']);
+
+        // --- LOGIKA SORTING DATABASE ---
+        if ($sortBy === 'schedule') {
+            // Jadwal terdekat: Urutkan dari waktu terdekat dengan sekarang
+            $query->orderBy('time_appointment', 'asc');
+        } else {
+            // Jika tidak ada sort atau sort tidak valid, kembalikan ke urutan default (terbaru)
+            $query->latest();
+        }
+
+        $trips = $query->get();
+
+        // 3. Format data agar sesuai dengan props yang diminta oleh PergiBarengCard.jsx di React
         $formattedTrips = $trips->map(function ($trip) {
             $parsedDate = $trip->time_appointment;
             
-            // Rating statis sementara
-            $avgRating = 5.0;
-            $totalReviews = 10;
-            
-            // Hitung kursi
+            $avgRating = $trip->initiator?->allRating() ?? 0;
+            $totalReviews = $trip->initiator?->user_ratings?->count() ?? 0;
             $joined = $trip->pergi_bareng_participants->count();
-            
-            // Logika icon transportasi
+
             $transportIcon = 'car';
+
             if (str_contains(strtolower($trip->transportation), 'umum')) {
                 $transportIcon = 'train';
             }
@@ -89,36 +100,44 @@ class PergiBarengController extends Controller
                 'image' => $trip->img_name ? '/storage/' . $trip->img_name : '/assets/terminal-cibubur.jpg', 
                 'title' => $trip->name,
                 'address' => $trip->departure_loc,
-                'date' => $parsedDate->translatedFormat('d M y'), 
-                'time' => $parsedDate->format('H:i'), 
+                'date' => $parsedDate->translatedFormat('d M y'),
+                'time' => $parsedDate->format('H:i'),
                 'capacity' => $joined . '/' . $trip->people_amount . ' Orang',
                 'remainingSeats' => max(0, $trip->people_amount - $joined),
                 'user' => [
-                    // PERBAIKAN: Gunakan full_name
-                    'name' => $trip->initiator->full_name ?? 'Penyelenggara',
-                    'avatar' => $trip->initiator->profile_photo_url ?? '/assets/default-avatar.png',
-                    'rating' => number_format($avgRating,1),
-                    'reviews' => $totalReviews,
-                    'verified' => true, 
+                    'name' => $trip->initiator?->name ?? 'Penyelenggara',
+                    'avatar' => $trip->initiator?->profile_photo_url ?? '/assets/default-avatar.png',
+                    'rating' => number_format($avgRating, 1),
+                    'reviews' => (int)$totalReviews,
+                    'verified' => true,
                 ],
                 'transportType' => $trip->transportation,
                 'transportIcon' => $transportIcon,
                 'href' => '/pergi-bareng/' . $trip->id,
             ];
         });
-        
-        // 3. Kirim data ke halaman Index.jsx
-       return Inertia::render('PergiBareng/Index', [
-            // Tambahkan ->values()->toArray() di sini!
-            'trips' => $formattedTrips->values()->toArray() 
+
+        // --- LOGIKA SORTING COLLECTION ---
+        if ($sortBy === 'seats') {
+            $formattedTrips = $formattedTrips->sortByDesc('remainingSeats')->values();
+        } elseif ($sortBy === 'rating') {
+            $formattedTrips = $formattedTrips->sortByDesc(function ($trip) {
+                return (float) $trip['user']['rating'];
+            })->values();
+        }
+
+        // 4. Kirim data ke halaman Index.jsx
+        return Inertia::render('PergiBareng/Index', [
+            'trips' => $formattedTrips
         ]);
     }
 
     public function show($id)
     {
+        // Load semua relasi yang dibutuhkan termasuk user_ratings dari initiator
         $trip = PergiBareng::with([
-            'initiator', 
-            'pergi_bareng_participants.user', 
+            'initiator.user_ratings', 
+            'pergi_bareng_participants.user'
         ])->findOrFail($id);
         
         return Inertia::render('PergiBareng/Show', [
@@ -128,9 +147,10 @@ class PergiBarengController extends Controller
 
     public function join($id)
     {
+        // Load semua relasi yang dibutuhkan termasuk user_ratings dari initiator
         $trip = PergiBareng::with([
-            'initiator', 
-            'pergi_bareng_participants.user',
+            'initiator.user_ratings', 
+            'pergi_bareng_participants.user'
         ])->findOrFail($id);
         
         return Inertia::render('PergiBareng/Join', [
@@ -138,40 +158,90 @@ class PergiBarengController extends Controller
         ]);
     }
 
-    public function store(Request $request, $id)
+  public function store(Request $request, $id)
     {
         $trip = PergiBareng::findOrFail($id);
 
-        $request->validate([
-            'participants' => 'required|array',
-            'participants.*.nama' => 'required|string', 
+        $validated = $request->validate([
+            'participants' => 'required|array|min:1',
+            'participants.*.nama' => 'required|string|max:100', 
+            'participants.*.tanggal_lahir' => 'required|date|before:today', 
             'participants.*.paspor' => 'nullable|string|max:12',
-            'participants.*.telepon' => 'required|string|max:15',
-            'participants.*.nik' => 'required|string|max:16',
+            // --- VALIDASI TELEPON DIBUAT LEBIH SIMPEL DAN ANTI-GAGAL ---
+            'participants.*.telepon' => [
+                'required', 
+                'string', 
+                'min:9',  // Minimal 9 karakter (tanpa +62)
+                'max:14'  // Maksimal 14 karakter (tanpa +62)
+            ],
+            'participants.*.nik' => [
+                'required', 
+                'regex:/^\d{16}$/'
+            ],
+        ], [
+            'participants.*.tanggal_lahir.required' => 'Tanggal lahir wajib diisi',
+            'participants.*.tanggal_lahir.date' => 'Format tanggal tidak valid',
+            // --- PESAN ERROR DISESUAIKAN ---
+            'participants.*.telepon.required' => 'Nomor telepon wajib diisi.',
+            'participants.*.telepon.min' => 'Nomor telepon terlalu pendek (minimal 9 angka).',
+            'participants.*.telepon.max' => 'Nomor telepon terlalu panjang (maksimal 14 angka).',
+            'participants.*.nik.regex' => 'NIK harus terdiri dari 16 digit angka',
+            'participants.*.nik.required' => 'NIK wajib diisi',
         ]);
 
-        foreach ($request->participants as $participant) {
+        foreach ($validated['participants'] as $participant) {
+            // Fungsi ini yang akan mengamankan dan merapikan nomornya
+            $phone = $this->normalizePhone($participant['telepon']);
+            
             PergiBarengParticipant::create([
                 'pergi_bareng_id' => $trip->id,
                 'full_name' => $participant['nama'], 
+                'birth_date' => $participant['tanggal_lahir'], 
                 'paspor' => $participant['paspor'] ?? null,
-                'phone_number' => $participant['telepon'],
+                'phone_number' => $phone,
                 'nik' => $participant['nik'],
             ]);
         }
 
-        return redirect()->route('pergi-bareng.success', $trip->id);
+        return redirect()->route('pergi-bareng.success', $trip->id)
+                        ->with('success', 'Anda berhasil bergabung dengan trip ini!');
     }
 
     public function success($id)
     {
         $trip = PergiBareng::with([
-            'initiator', 
-            'pergi_bareng_participants.user',
+            'initiator.user_ratings', 
+            'pergi_bareng_participants.user'
         ])->findOrFail($id);
         
         return Inertia::render('PergiBareng/Success', [
             'trip' => $this->formatTripData($trip)
         ]);
+    }
+
+    /**
+     * Normalisasi nomor telepon ke format +62
+     */
+    private function normalizePhone(?string $phone): ?string
+    {
+        if (!$phone) {
+            return null;
+        }
+
+        $phone = preg_replace('/[^\d+]/', '', $phone);
+        
+        if (str_starts_with($phone, '+62')) {
+            return $phone;
+        }
+        
+        if (str_starts_with($phone, '62')) {
+            return '+' . $phone;
+        }
+        
+        if (str_starts_with($phone, '0')) {
+            return '+62' . substr($phone, 1);
+        }
+        
+        return '+62' . $phone;
     }
 }
