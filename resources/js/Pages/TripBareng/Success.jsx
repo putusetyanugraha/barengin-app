@@ -59,10 +59,13 @@ export default function Success({ order }) {
                         </div>
                     </div>
 
-                    {/* 4. Floating Badge (7 Teman Baru Menunggu) */}
+                    {/* 4. Floating Badge (Dinamis Sesuai Permintaan) */}
                     <div className="absolute -bottom-5 right-2 md:-right-8 bg-[#6ED78D] text-white px-5 py-2.5 rounded-xl flex items-center gap-2 shadow-lg shadow-green-200 z-10 font-semibold text-sm">
-                        <FaUserFriends className="text-lg" />
-                        {order.friends_waiting} Teman Baru Menunggu
+                        <FaUserFriends className="text-lg shrink-0" />
+                        {order.friends_waiting > 0 
+                            ? `${order.friends_waiting} Teman Baru Menunggu` 
+                            : "Bergabung dalam grup"
+                        }
                     </div>
                 </div>
 
@@ -70,10 +73,12 @@ export default function Success({ order }) {
                 <div className="w-full max-w-[500px] flex flex-col gap-4 mt-2">
                     {/* Tombol Primary (Biru) dengan icon chat */}
                     <Button 
+                        isButtonLink
+                        href="/chat"
                         type="primary" 
                         size="md" 
                         rounded={true}
-                        className="w-full font-bold flex items-center justify-center gap-2"
+                        className="w-full font-bold flex items-center justify-center gap-2 text-white"
                     >
                         <BsChatDotsFill className="text-lg" />
                         Masuk ke Grup Chat
@@ -82,7 +87,7 @@ export default function Success({ order }) {
                     {/* Tombol Outline untuk Lewati */}
                     <Button 
                         isButtonLink
-                        href="/"
+                        href="/trip-bareng"
                         variant="outline" 
                         type="neutral" 
                         size="md" 
