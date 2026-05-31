@@ -47,7 +47,8 @@ export default function AdminSidebar({ isCollapsed, setIsCollapsed, isMobileOpen
             group: "ADMIN",
             short: "ADM",
             items: [
-                { name: "Manajemen User", icon: <FiUsers />, href: "/management-user" }, 
+                { name: "Beranda Admin", icon: <FiHome />, href: "/admin" },
+                { name: "Manajemen User", icon: <FiUsers />, href: "/admin/users" },
                 { name: "Pesan", icon: <FiMessageSquare />, href: "/admin/messages" },
             ],
         },

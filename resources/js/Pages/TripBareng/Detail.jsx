@@ -25,12 +25,12 @@ export default function Detail({ trip }) {
     const currentTrip = trip;
 
     const IconMap = {
-        'FaCarSide': FaCarSide,
-        'FaBed': FaBed,
-        'FaUtensils': FaUtensils,
-        'FaCamera': FaCamera,
-        'FaTicketAlt': FaTicketAlt,
-        'FaUserTie': FaUserTie,
+        FaCarSide: FaCarSide,
+        FaBed: FaBed,
+        FaUtensils: FaUtensils,
+        FaCamera: FaCamera,
+        FaTicketAlt: FaTicketAlt,
+        FaUserTie: FaUserTie,
     };
 
     return (
@@ -72,31 +72,44 @@ export default function Detail({ trip }) {
                             <span>{currentTrip.duration}</span>
                         </div>
 
-                        {/* Avatar Group & Confirmed Count */}
-                        <div className="flex items-center gap-4 bg-white/20 backdrop-blur-md w-fit px-4 py-2.5 rounded-full border border-white/20">
-                            <div className="flex -space-x-3">
-                                {[1, 2, 3].map((i) => (
-                                    <img
-                                        key={i}
-                                        src={`https://i.pravatar.cc/100?img=${i + 10}`}
-                                        className="w-8 h-8 rounded-full border-2 border-transparent object-cover"
-                                        alt="User"
-                                    />
-                                ))}
-                                <div className="w-8 h-8 rounded-full border-2 border-transparent bg-blue-100 text-primary-700 flex items-center justify-center text-xs font-bold z-10">
-                                    +6
+                        {/* Avatar Group & Confirmed Count — DINAMIS berdasarkan joined_count */}
+                        {currentTrip.joined_count > 0 && (
+                            <div className="flex items-center gap-4 bg-white/20 backdrop-blur-md w-fit px-4 py-2.5 rounded-full border border-white/20">
+                                <div className="flex -space-x-3">
+                                    {/* Tampilkan maks 3 avatar */}
+                                    {Array.from({
+                                        length: Math.min(
+                                            currentTrip.joined_count,
+                                            3,
+                                        ),
+                                    }).map((_, i) => (
+                                        <img
+                                            key={i}
+                                            src={`https://i.pravatar.cc/100?img=${i + 10}`}
+                                            className="w-8 h-8 rounded-full border-2 border-white/40 object-cover"
+                                            alt="User"
+                                        />
+                                    ))}
+
+                                    {/* Tampilkan +N hanya jika lebih dari 3 */}
+                                    {currentTrip.joined_count > 3 && (
+                                        <div className="w-8 h-8 rounded-full border-2 border-white/40 bg-blue-100 text-primary-700 flex items-center justify-center text-xs font-bold z-10">
+                                            +{currentTrip.joined_count - 3}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="text-xs leading-tight">
+                                    <p className="font-semibold text-white">
+                                        Wisatawan Terkonfirmasi
+                                    </p>
+                                    <p className="text-white/80 font-medium">
+                                        {currentTrip.joined_count}/
+                                        {currentTrip.capacity} telah bergabung
+                                    </p>
                                 </div>
                             </div>
-                            <div className="text-xs leading-tight">
-                                <p className="font-semibold text-white">
-                                    Wisatawan Terkonfirmasi
-                                </p>
-                                <p className="text-white/80 font-medium">
-                                    {currentTrip.joined_count}/
-                                    {currentTrip.capacity} telah bergabung
-                                </p>
-                            </div>
-                        </div>
+                        )}
                     </div>
                 </div>
 

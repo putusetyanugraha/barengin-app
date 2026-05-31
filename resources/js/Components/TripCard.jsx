@@ -16,17 +16,21 @@ export default function TripCard({ trip }) {
         location,
         date,
         capacity,
-        remaining_seats, // Data baru dari Controller
+        joined_count,
+        remaining_seats,
         rating,
         price,
         guide,
-        guide_avatar, // Data baru dari Controller
+        guide_avatar,
         guide_badge,
-        guide_rating, // Data baru dari Controller
-        guide_reviews, // Data baru dari Controller
+        guide_rating,
+        guide_reviews,
         image,
         liked,
     } = trip;
+
+    const joinedCountSafe = typeof joined_count === "number" ? joined_count : 0;
+    const capacitySafe = typeof capacity === "number" ? capacity : 0;
 
     return (
         <div className="rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden hover:shadow-md transition">
@@ -47,7 +51,7 @@ export default function TripCard({ trip }) {
                     />
                 </button>
 
-                {/* [PERBAIKAN 1]: SISA KURSI DINAMIS */}
+                {/* SISA KURSI DINAMIS */}
                 <div className="absolute left-3 bottom-3 bg-neutral-800/80 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 font-medium z-10">
                     <BsLightningFill className="text-yellow-400" />
                     <span>sisa {remaining_seats} kursi lagi</span>
@@ -78,24 +82,20 @@ export default function TripCard({ trip }) {
                             />
                             <span className="truncate">Tanggal Trip</span>
                         </div>
-
-                        {/* PERBAIKAN: Memecah string menjadi 2 baris span yang masing-masing di-truncate */}
                         <div className="flex flex-col min-w-0" title={date}>
                             <span className="text-neutral-800 font-semibold leading-tight pr-1.5 truncate">
-                                {date?.split(" (")[0]}{" "}
-                                {/* Ini akan mengambil "13 Jul 26 - 16 Jul 26" */}
+                                {date?.split(" (")[0]}
                             </span>
                             {date?.includes("(") && (
                                 <span className="text-neutral-600 font-medium leading-tight truncate">
-                                    ({date?.split(" (")[1]}{" "}
-                                    {/* Ini akan mengambil "(3 Days)" */}
+                                    ({date?.split(" (")[1]}
                                 </span>
                             )}
                         </div>
                     </div>
 
                     {/* --- KOLOM KAPASITAS --- */}
-                    <div className="flex flex-col gap-1.5 pl-1 min-w-0">
+                    <div className="flex flex-col gap-1.5 pl-3 min-w-0">
                         <div className="flex items-center gap-1 text-neutral-500 font-medium">
                             <MdPeopleAlt
                                 size={14}
@@ -103,16 +103,15 @@ export default function TripCard({ trip }) {
                             />
                             <span className="truncate">Kapasitas</span>
                         </div>
-                        <p
-                            className="text-neutral-800 font-semibold leading-tight line-clamp-2"
-                            title={capacity}
-                        >
-                            {capacity}
+                        <p className="text-neutral-800 font-semibold">
+                            {typeof joined_count === "number"
+                                ? `${joined_count}/${capacity} orang`
+                                : `${capacity} orang`}
                         </p>
                     </div>
 
                     {/* --- KOLOM RATING --- */}
-                    <div className="flex flex-col gap-1.5 pl-1 min-w-0">
+                    <div className="flex flex-col gap-1.5 pl-3 min-w-0">
                         <div className="flex items-center gap-1 text-neutral-500 font-medium">
                             <FaStar
                                 size={14}
@@ -120,12 +119,12 @@ export default function TripCard({ trip }) {
                             />
                             <span className="truncate">Rating Trip</span>
                         </div>
-                        <p
-                            className="text-neutral-800 font-semibold leading-tight line-clamp-2"
-                            title={rating}
-                        >
-                            {rating}
-                        </p>
+                        <div className="flex items-center gap-1 mt-0.5 text-[11px] font-medium text-neutral-500">
+                        <span className="text-neutral-900 font-bold">
+                            {guide_rating}
+                        </span>
+                        <span>({guide_reviews} ulasan)</span>
+                    </div>
                     </div>
                 </div>
 
@@ -133,7 +132,7 @@ export default function TripCard({ trip }) {
 
                 {/* Info Pemandu */}
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 min-w-0 pr-2">
+                    <div className="flex items-center gap-2 min-w-0 pr-2">
                         <div className="h-11 w-11 shrink-0 rounded-full bg-gray-200 overflow-hidden border border-neutral-200">
                             <img
                                 src={guide_avatar}
@@ -141,26 +140,26 @@ export default function TripCard({ trip }) {
                                 className="h-full w-full object-cover"
                             />
                         </div>
-                        <div className="min-w-0">
-                            {/* [PERBAIKAN 3]: NAMA GUIDE TERPOTONG (TRUNCATE) */}
-                            <div className="font-bold text-gray-900 flex items-center gap-1 text-sm">
-                                <span className="truncate max-w-[84px]">
-                                    {guide}
-                                </span>
+                        
+                        <div className="min-w-0 max-w-[140px] sm:max-w-[160px]">
+                            {/* NAMA */}
+                            <div className="flex items-center gap-1 text-sm font-bold text-gray-900 min-w-0">
+                                <span className="truncate">{guide}</span>
                                 <MdVerified className="text-blue-500 shrink-0 size-4" />
                             </div>
 
-                            <div className="text-orange-500 text-xs font-semibold mt-0.5">
+                            {/* BADGE */}
+                            <div className="text-orange-500 text-xs font-semibold mt-0.5 truncate">
                                 {guide_badge}
                             </div>
 
-                            {/* [PERBAIKAN 4]: RATING GUIDER DITAMBAHKAN */}
-                            <div className="flex items-center gap-1 mt-0.5 text-[11px] font-medium text-neutral-500">
-                                <FaStar className="text-yellow-400 size-3" />
-                                <span className="text-neutral-900 font-bold">
+                            {/* RATING */}
+                            <div className="flex items-center gap-1 mt-0.5 text-[11px] font-medium text-neutral-500 min-w-0">
+                                <FaStar className="text-yellow-400 size-3 shrink-0" />
+                                <span className="text-neutral-900 font-bold shrink-0">
                                     {guide_rating}
                                 </span>
-                                <span>({guide_reviews} ulasan)</span>
+                                <span className="truncate">({guide_reviews} ulasan)</span>
                             </div>
                         </div>
                     </div>
@@ -168,9 +167,10 @@ export default function TripCard({ trip }) {
                     <Button
                         size="xs"
                         variant="outline"
-                        className="px-4 py-2.5 flex gap-1 items-center"
+                        className="px-4 py-2.5 flex gap-1 items-center shrink-0"
                     >
-                        <BsChatDots size={14} /> Chat Pemandu
+                        <BsChatDots size={14} />
+                        Chat Pemandu
                     </Button>
                 </div>
 
@@ -179,7 +179,7 @@ export default function TripCard({ trip }) {
                 {/* Harga & Tombol Aksi */}
                 <div className="flex items-center justify-between">
                     <div className="text-xl font-bold text-gray-900">
-                        Rp {price.toLocaleString("id-ID")}
+                        Rp {price?.toLocaleString("id-ID") ?? 0}
                         <span className="text-sm font-medium text-gray-500 ml-1">
                             / orang
                         </span>
@@ -192,11 +192,6 @@ export default function TripCard({ trip }) {
                     >
                         Ikut Trip
                     </Button>
-                    {/* <Link 
-                        href={`/trip-bareng/${trip.id}`}
-                        className="bg-[#0071C1] hover:bg-blue-700 text-white font-semibold rounded-lg px-5 py-2.5 text-sm transition-colors"
-                        >
-                        </Link> */}
                 </div>
             </div>
         </div>
