@@ -126,23 +126,24 @@ class TripsController extends Controller
         $endDate = Carbon::parse($trip->end_date);
 
         $tripData = [
-            'id' => $trip->id,
-            'title' => $trip->name,
-            'location' => 'Indonesia',
-            'duration' => $startDate->diffInDays($endDate) . ' Hari',
-            'date_range' => $startDate->format('d F Y') . ' hingga ' . $endDate->format('d F Y'),
-            'joined_count' => $joined, // <--- Sekarang pakai $joined asli dari DB
-            'capacity' => $trip->people_amount,
-            'price' => (float) $trip->price,
+            'id'          => $trip->id,
+            'title'       => $trip->name,
+            'location'    => $trip->location ?? $trip->city ?? $trip->destination ?? $trip->name,
+
+            'duration'    => $startDate->diffInDays($endDate) . ' Hari',
+            'date_range'  => $startDate->format('d F Y') . ' hingga ' . $endDate->format('d F Y'),
+            'joined_count' => $joined,
+            'capacity'    => $trip->people_amount,
+            'price'       => (float) $trip->price,
             'description' => $trip->description,
-            'host' => [
-                'name' => $trip->guide_name,
-                'role' => 'Pemilik',
-                'badge' => 'Expert Guide - ★ ' . $ratingText,
+            'host'        => [
+                'name'   => $trip->guide_name,
+                'role'   => 'Pemilik',
+                'badge'  => 'Expert Guide - ★ ' . $ratingText,
                 'avatar' => $trip->profile_image ?? '/assets/default-avatar.png'
             ],
-            'itinerary' => $itinerary,
-            'facilities' => $facilities
+            'itinerary'   => $itinerary,
+            'facilities'  => $facilities,
         ];
 
         return Inertia::render('TripBareng/Detail', [

@@ -63,34 +63,36 @@ class TripSeeder extends Seeder
 
         // 3. Looping 10 Trip
         for ($i = 1; $i <= 10; $i++) {
-            
+
             $startDate = Carbon::parse($faker->dateTimeBetween('+1 month', '+3 months'));
             $endDate = (clone $startDate)->addDays($faker->numberBetween(2, 4));
             $price = $faker->randomElement([1500000, 2500000, 3800000]);
             $customerId = $faker->randomElement($customerIds);
             $guiderId = $faker->randomElement($guiderIds);
+            $cityName = $faker->city;
 
-            // A. Tabel Trips
             $tripId = DB::table('trips')->insertGetId([
-                'guider_id' => $guiderId,
-                'name' => 'Trip ' . $faker->city,
-                'description' => $faker->randomElement($tripDescriptions),
+                'guider_id'    => $guiderId,
+                'name'         => 'Trip ' . $cityName,
+                'description'  => $faker->randomElement($tripDescriptions),
                 'people_amount' => $faker->numberBetween(15, 20),
-                'start_date' => $startDate,
-                'end_date' => $endDate,
-                'rating' => $faker->randomFloat(2, 4.0, 5.0),
-                'price' => $price,
-                'image' => '/assets/trips/bromo.jpg',
-                'created_at' => now(),
-                'updated_at' => now(),
-                'location' => "Indonesia"
+                'start_date'   => $startDate,
+                'end_date'     => $endDate,
+                'rating'       => $faker->randomFloat(2, 4.0, 5.0),
+                'price'        => $price,
+                'image'        => '/assets/trips/bromo.jpg',
+                'location'     => $cityName, // ← nama kota asli, bukan "Indonesia"
+                'created_at'   => now(),
+                'updated_at'   => now(),
             ]);
 
             // B. Pivot Trip_Facilities (2 sampai 4 fasilitas acak)
             $randomFacilities = $faker->randomElements($facilityIds, $faker->numberBetween(2, 4));
             foreach ($randomFacilities as $facId) {
                 DB::table('trip_facilities')->insert([
-                    'trip_id' => $tripId, 'facility_id' => $facId, 'created_at' => now()
+                    'trip_id' => $tripId,
+                    'facility_id' => $facId,
+                    'created_at' => now()
                 ]);
             }
 
@@ -98,9 +100,9 @@ class TripSeeder extends Seeder
             // C. Trip Activities (Bervariasi 3 sampai 8)
             // ==========================================
             $totalActivities = $faker->numberBetween(3, 8); // Angka acak dari 3 s.d 8
-            
+
             for ($act = 1; $act <= $totalActivities; $act++) {
-                
+
                 // Menentukan nama & deskripsi berdasarkan urutan (Awal, Tengah, Akhir)
                 if ($act === 1) {
                     $actName = 'Penjemputan & Briefing';
@@ -135,15 +137,15 @@ class TripSeeder extends Seeder
 
             // D. Tabel user_ratings
             DB::table('user_ratings')->insert([
-                'user_id' => $customerId, 
-                'rated_user_id' => $guiderId, 
+                'user_id' => $customerId,
+                'rated_user_id' => $guiderId,
                 'type' => 'pergi_bareng',
                 'rating_amount' => $faker->randomFloat(2, 4.0, 5.0),
                 'comment' => $faker->randomElement(['Guide sangat ramah dan seru!', 'Perjalanan aman dan menyenangkan.', 'Sangat direkomendasikan untuk trip bareng.', 'Itinerary jelas dan on-time.']),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-            
+
 
             // Transaksi Dummy
             // $transactionId = Str::uuid()->toString();
