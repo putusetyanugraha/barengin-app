@@ -1,6 +1,6 @@
 import React, { useState, useEffect }from "react";
 import { FaChevronLeft } from "react-icons/fa";
-import { Head, Link } from "@inertiajs/react";
+import { Head, Link, router } from "@inertiajs/react";
 import MainLayout from "@/Layouts/MainLayout";
 import Container from "@/Components/Container";
 import Button from "@/Components/Button";
@@ -36,6 +36,17 @@ export default function Show({ trip }) {
 
         fetchCoordinates();
     }, [trip?.details?.titik_kumpul]);
+
+    const handleChatOrganizer = () => {
+        const otherUserId = trip?.organizer?.id;
+
+        if (!otherUserId) {
+            alert("Organizer id belum tersedia.");
+            return;
+        }
+
+        router.post("/chat/personal", { user_id: otherUserId });
+    };
 
     return (
         <MainLayout>
@@ -77,7 +88,7 @@ export default function Show({ trip }) {
                                             <FaStar className="text-warning-500"/> {trip.organizer.rating} ({trip.organizer.reviews} ulasan)
                                         </div>
                                     </div>
-                                    <Button variant="outline" size="sm">Chat Penyelenggara</Button>
+                                    <Button variant="outline" size="sm"onClick={handleChatOrganizer}>Chat Penyelenggara</Button>
                                 </div>
                             </div>
                             

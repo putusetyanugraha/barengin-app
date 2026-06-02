@@ -38,6 +38,7 @@ class PergiBarengController extends Controller
             ],
 
             'organizer' => [
+                'id' => $trip->initiator?->id,
                 'name' => $trip->initiator?->full_name ?? 'Penyelenggara',
                 'avatar' => $trip->initiator?->public_profile_image ?? asset('assets/default-profile.png'),
                 'rating' => number_format($avgRating, 1), 
@@ -111,6 +112,7 @@ class PergiBarengController extends Controller
                 'capacity' => $joined . '/' . $trip->people_amount . ' Orang',
                 'remainingSeats' => max(0, $trip->people_amount - $joined),
                 'user' => [
+                    'id' => $trip->initiator?->id,
                     'name' => $trip->initiator?->full_name ?? 'Penyelenggara',
                     'avatar' => $trip->initiator?->public_profile_image ?? asset('assets/default-profile.png'),
                     'rating' => number_format($avgRating, 1),

@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "@inertiajs/react";
+import { Link, router } from "@inertiajs/react";
 import Button from "@/Components/Button";
 import { FaMapMarkerAlt, FaClock, FaUsers, FaComment, FaCar, FaBus, FaTrain } from "react-icons/fa";
 
@@ -30,6 +30,17 @@ export default function PergiBarengCard({ data }) {
             case "train": return <FaTrain className="w-4 h-4" />;
             default: return <FaCar className="w-4 h-4" />;
         }
+    };
+
+    const handleChat = () => {
+        const otherUserId = data?.user?.id; // pastikan backend mengirim ini
+
+        if (!otherUserId) {
+            alert("Organizer id belum tersedia.");
+            return;
+        }
+
+        router.post("/chat/personal", { user_id: otherUserId });
     };
 
     return (
@@ -121,6 +132,7 @@ export default function PergiBarengCard({ data }) {
                 size="sm"
                 rounded={true}
                 className="gap-1.5 text-xs h-8 px-3 shrink-0"
+                onClick={handleChat}
             >
                 <FaComment className="w-3 h-3" />
                 Chat
