@@ -52,6 +52,7 @@ class TripsController extends Controller
                 'rating' => (float) $trip->rating,
                 'reviews' => rand(10, 150), // Ini review trip (bukan guide), bisa biarkan random dulu kalau belum ada tabelnya
                 'price' => (float) $trip->price,
+                'guide_id' => $trip->guider_id, 
                 'guide' => $trip->guide_name,
                 'guide_avatar' => $trip->profile_image ?? '/assets/default-avatar.png',
                 'guide_rating' => $guiderRating ? number_format($guiderRating, 1) : '0',
@@ -136,10 +137,11 @@ class TripsController extends Controller
             'capacity'    => $trip->people_amount,
             'price'       => (float) $trip->price,
             'description' => $trip->description,
-            'host'        => [
-                'name'   => $trip->guide_name,
-                'role'   => 'Pemilik',
-                'badge'  => 'Expert Guide - ★ ' . $ratingText,
+            'host' => [
+                'id' => $trip->guider_id,
+                'name' => $trip->guide_name,
+                'role' => 'Pemilik',
+                'badge' => 'Expert Guide - ★ ' . $ratingText,
                 'avatar' => $trip->profile_image ?? '/assets/default-avatar.png'
             ],
             'itinerary'   => $itinerary,
@@ -304,6 +306,7 @@ class TripsController extends Controller
 
         $order = [
             'transaction_id' => 'OTRIP-' . str_pad($id, 6, '0', STR_PAD_LEFT),
+            'trip_id' => (int) $trip->id,
             'trip_title' => $trip->name,
             'date_range' => $startDate->format('d M') . ' - ' . $endDate->format('d M Y'),
             'quantity' => 1,
