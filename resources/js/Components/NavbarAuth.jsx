@@ -29,11 +29,11 @@ export default function NavbarAuth() {
         { label: "Pergi Bareng", href: "/pergi-bareng", icon: FaCarSide },
     ];
 
-    const avatarUrl =
+    const avatarUrl = user?.public_profile_image ||
         user?.avatar_url ||
         user?.profile_photo_url ||
         user?.avatar ||
-        "/assets/default-avatar.png";
+        "/assets/default-image.png";
 
     const closeAll = () => {
         setIsDesktopDropdownOpen(false);

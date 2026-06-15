@@ -14,7 +14,7 @@ export default function PergiBarengCard({ data }) {
         remainingSeats = 5,
         user = {
             name: "Edwin Hendly",
-            avatar: "/assets/default-avatar.png",
+            avatar: "/assets/default-image.png",
             rating: 4.9,
             reviews: 120,
             verified: true,
