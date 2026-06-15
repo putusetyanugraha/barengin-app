@@ -17,8 +17,8 @@ class PergiBarengController extends Controller
     {
         $parsedDate = $trip->time_appointment;
 
-        $avgRating = $trip->initiator?->typeRating('pergi_bareng') ?? 0;
-        $totalReviews = $trip->initiator?->user_ratings?->where('type', 'pergi_bareng')->count() ?? 0;
+        $avgRating = $trip->initiator?->receivedRatingAvg('pergi_bareng') ?? 0;
+        $totalReviews = $trip->initiator?->receivedRatingCount('pergi_bareng') ?? 0;
 
         $authId = request()->user()?->id;
         $isFollowing = $authId && $trip->initiator
@@ -112,8 +112,8 @@ class PergiBarengController extends Controller
         $formattedTrips = $trips->map(function ($trip) use ($likedIds) {
             $parsedDate = $trip->time_appointment;
             
-            $avgRating = $trip->initiator?->typeRating('pergi_bareng') ?? 0;
-            $totalReviews = $trip->initiator?->user_ratings?->where('type', 'pergi_bareng')->count() ?? 0;
+            $avgRating = $trip->initiator?->receivedRatingAvg('pergi_bareng') ?? 0;
+            $totalReviews = $trip->initiator?->receivedRatingCount('pergi_bareng') ?? 0;
             $joined = $trip->pergi_bareng_participants->count();
 
             $transportIcon = 'car';

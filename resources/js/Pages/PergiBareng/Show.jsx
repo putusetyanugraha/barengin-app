@@ -121,34 +121,15 @@ export default function Show({ trip }) {
                                             <FaStar className="text-warning-500"/> {trip.organizer.rating} ({trip.organizer.reviews} ulasan)
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2 shrink-0">
-                                        <Button variant="outline" size="sm" className="gap-1.5" onClick={handleChatOrganizer}>
-                                            <BsChatDots className="text-sm" />
-                                            Chat Penyelenggara
-                                        </Button>
-                                        <button
-                                            type="button"
-                                            onClick={handleToggleLike}
-                                            aria-pressed={isLiked}
-                                            aria-label={isLiked ? "Batal sukai" : "Sukai"}
-                                            className={`h-9 w-9 shrink-0 rounded-full border flex items-center justify-center transition-colors ${
-                                                isLiked
-                                                    ? "border-red-500 text-red-500 bg-red-50"
-                                                    : "border-neutral-300 text-neutral-500 hover:text-red-500 hover:border-red-500 hover:bg-red-50"
-                                            }`}
-                                        >
-                                            {isLiked ? (
-                                                <FaHeart className="text-sm" />
-                                            ) : (
-                                                <FaRegHeart className="text-sm" />
-                                            )}
-                                        </button>
-                                    </div>
+                                    <Button variant="outline" size="sm" className="gap-1.5 shrink-0" onClick={handleChatOrganizer}>
+                                        <BsChatDots className="text-sm" />
+                                        Chat Penyelenggara
+                                    </Button>
                                 </div>
                             </div>
                             
                             {/* Gambar Bus */}
-                            <div className="w-full md:w-1/3 bg-neutral-100 min-h-[250px] md:min-h-[200px]">
+                            <div className="relative w-full md:w-1/3 bg-neutral-100 min-h-[250px] md:min-h-[200px]">
                                 <img
                                     src={trip.img_name ? `/storage/${trip.img_name}` : '/assets/pergi-bareng/PergiBarengHeader.avif'}
                                     alt={trip.title}
@@ -157,6 +138,19 @@ export default function Show({ trip }) {
                                         e.target.src = '/assets/pergi-bareng/PergiBarengHeader.avif';
                                     }}
                                 />
+                                <button
+                                    type="button"
+                                    onClick={handleToggleLike}
+                                    aria-pressed={isLiked}
+                                    aria-label={isLiked ? "Batal sukai" : "Sukai"}
+                                    className="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow transition-transform hover:scale-105"
+                                >
+                                    {isLiked ? (
+                                        <FaHeart className="h-5 w-5 text-red-500" />
+                                    ) : (
+                                        <FaRegHeart className="h-5 w-5 text-neutral-500" />
+                                    )}
+                                </button>
                             </div>
                         </div>
 

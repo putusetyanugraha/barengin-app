@@ -483,8 +483,8 @@ class ProfileHistoryController extends Controller
         $items->getCollection()->transform(function (PergiBareng $trip) {
             $date     = $trip->time_appointment;
             $joined   = $trip->pergi_bareng_participants->count();
-            $avgRate  = $trip->initiator?->allRating() ?? 0;
-            $reviews  = $trip->initiator?->user_ratings?->count() ?? 0;
+            $avgRate  = $trip->initiator?->receivedRatingAvg('pergi_bareng') ?? 0;
+            $reviews  = $trip->initiator?->receivedRatingCount('pergi_bareng') ?? 0;
 
             $transportIcon = 'car';
             if (str_contains(strtolower($trip->transportation), 'umum')) {
