@@ -1,9 +1,19 @@
-import React, { useMemo } from "react";
-import { Head, Link, router } from "@inertiajs/react";
+import React, { useState, useEffect, useMemo } from "react";
+import { Head, Link, router} from "@inertiajs/react";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+
+// Fix Leaflet default marker icon (vite bundler issue)
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+    iconUrl:       "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+    shadowUrl:     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+});
+
 import Container from "@/Components/Container";
 import Button from "@/Components/Button";
-import LocationMap from "@/Components/LocationMap";
-
 import MainLayout from "@/Layouts/MainLayout";
 
 import {
@@ -20,7 +30,6 @@ import {
     FaTicketAlt,
     FaUserTie,
 } from "react-icons/fa";
-
 import { BsChatText } from "react-icons/bs";
 import { IoMdInformationCircleOutline } from "react-icons/io";
 
@@ -28,37 +37,37 @@ export default function Detail({ trip }) {
     const currentTrip = trip;
 
     const IconMap = {
-        FaCarSide: FaCarSide,
-        FaBed: FaBed,
-        FaUtensils: FaUtensils,
-        FaCamera: FaCamera,
-        FaTicketAlt: FaTicketAlt,
-        FaUserTie: FaUserTie,
-        carside: FaCarSide,
-        car: FaCarSide,
-        transport: FaCarSide,
+        FaCarSide:    FaCarSide,
+        FaBed:        FaBed,
+        FaUtensils:   FaUtensils,
+        FaCamera:     FaCamera,
+        FaTicketAlt:  FaTicketAlt,
+        FaUserTie:    FaUserTie,
+        carside:      FaCarSide,
+        car:          FaCarSide,
+        transport:    FaCarSide,
         transportasi: FaCarSide,
-        bed: FaBed,
-        hotel: FaBed,
-        penginapan: FaBed,
-        utensils: FaUtensils,
-        food: FaUtensils,
-        makan: FaUtensils,
-        camera: FaCamera,
-        foto: FaCamera,
-        dokumentasi: FaCamera,
-        ticket: FaTicketAlt,
-        ticketalt: FaTicketAlt,
-        tiket: FaTicketAlt,
-        usertie: FaUserTie,
-        guide: FaUserTie,
-        pemandu: FaUserTie,
-        "fa-car-side": FaCarSide,
-        "fa-bed": FaBed,
-        "fa-utensils": FaUtensils,
-        "fa-camera": FaCamera,
+        bed:          FaBed,
+        hotel:        FaBed,
+        penginapan:   FaBed,
+        utensils:     FaUtensils,
+        food:         FaUtensils,
+        makan:        FaUtensils,
+        camera:       FaCamera,
+        foto:         FaCamera,
+        dokumentasi:  FaCamera,
+        ticket:       FaTicketAlt,
+        ticketalt:    FaTicketAlt,
+        tiket:        FaTicketAlt,
+        usertie:      FaUserTie,
+        guide:        FaUserTie,
+        pemandu:      FaUserTie,
+        "fa-car-side":   FaCarSide,
+        "fa-bed":        FaBed,
+        "fa-utensils":   FaUtensils,
+        "fa-camera":     FaCamera,
         "fa-ticket-alt": FaTicketAlt,
-        "fa-user-tie": FaUserTie,
+        "fa-user-tie":   FaUserTie,
     };
 
     // Helper: toleran terhadap spasi, case, dan tanda hubung
@@ -72,20 +81,36 @@ export default function Detail({ trip }) {
         );
     };
 
-    const mapQuery = useMemo(() => {
-        return (
-            currentTrip?.location_detail ||
-            currentTrip?.location ||
-            currentTrip?.title ||
-            "Indonesia"
-        );
-    }, [currentTrip]);
+    // ── MAP STATE ──
+    const [position, setPosition] = useState([-6.1751, 106.8272]); // Default: Jakarta
 
-    const mapLabel = useMemo(() => {
-        return currentTrip?.title
-            ? `Lokasi ${currentTrip.title}`
-            : "Lokasi Trip";
-    }, [currentTrip]);
+    // Cari koordinat berdasarkan trip.location (nama destinasi trip)
+    useEffect(() => {
+        const lokasi = currentTrip?.location || currentTrip?.title;
+        if (!lokasi) return;
+
+        const fetchCoordinates = async () => {
+            try {
+                const query = encodeURIComponent(`${lokasi}, Indonesia`);
+                const response = await fetch(
+                    `https://nominatim.openstreetmap.org/search?format=json&q=${query}`
+                );
+                const data = await response.json();
+
+                if (data && data.length > 0) {
+                    setPosition([parseFloat(data[0].lat), parseFloat(data[0].lon)]);
+                } else {
+                    console.log("Lokasi tidak ditemukan, tetap di posisi default.");
+                }
+            } catch (error) {
+                console.error("Gagal cari koordinat:", error);
+            }
+        };
+
+        fetchCoordinates();
+    }, [currentTrip?.location, currentTrip?.title]);
+
+
 
     const handleOpenChat = () => {
         const otherUserId = currentTrip?.host?.id;
@@ -139,12 +164,7 @@ export default function Detail({ trip }) {
                         {currentTrip.joined_count > 0 && (
                             <div className="flex items-center gap-4 bg-white/20 backdrop-blur-md w-fit px-4 py-2.5 rounded-full border border-white/20">
                                 <div className="flex -space-x-3">
-                                    {Array.from({
-                                        length: Math.min(
-                                            currentTrip.joined_count,
-                                            3,
-                                        ),
-                                    }).map((_, i) => (
+                                    {Array.from({ length: Math.min(currentTrip.joined_count, 3) }).map((_, i) => (
                                         <img
                                             key={i}
                                             src={`https://i.pravatar.cc/100?img=${i + 10}`}
@@ -159,12 +179,9 @@ export default function Detail({ trip }) {
                                     )}
                                 </div>
                                 <div className="text-xs leading-tight">
-                                    <p className="font-semibold text-white">
-                                        Wisatawan Terkonfirmasi
-                                    </p>
+                                    <p className="font-semibold text-white">Wisatawan Terkonfirmasi</p>
                                     <p className="text-white/80 font-medium">
-                                        {currentTrip.joined_count}/
-                                        {currentTrip.capacity} telah bergabung
+                                        {currentTrip.joined_count}/{currentTrip.capacity} telah bergabung
                                     </p>
                                 </div>
                             </div>
@@ -198,17 +215,12 @@ export default function Detail({ trip }) {
                         <section>
                             <div className="space-y-0 relative">
                                 {currentTrip.itinerary.map((item, idx) => (
-                                    <div
-                                        key={idx}
-                                        className="flex gap-4 md:gap-6 relative group"
-                                    >
+                                    <div key={idx} className="flex gap-4 md:gap-6 relative group">
                                         <div className="flex flex-col items-center">
                                             <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0 z-10 text-sm mt-1 transition-colors duration-300 bg-neutral-200 text-neutral-600 group-hover:bg-primary-600 group-hover:text-white">
                                                 {item.step}
                                             </div>
-                                            {idx !==
-                                                currentTrip.itinerary.length -
-                                                    1 && (
+                                            {idx !== currentTrip.itinerary.length - 1 && (
                                                 <div className="w-0.5 h-full bg-neutral-200 mt-2 mb-1 rounded-full group-hover:bg-primary-300 transition-colors duration-300" />
                                             )}
                                         </div>
@@ -223,27 +235,22 @@ export default function Detail({ trip }) {
                                             <p className="text-neutral-600 text-[15px] leading-relaxed mb-4 whitespace-pre-line">
                                                 {item.desc}
                                             </p>
-                                            {item.images &&
-                                                item.images.length > 0 && (
-                                                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                                                        {item.images.map(
-                                                            (img, imgIdx) => (
-                                                                <img
-                                                                    key={imgIdx}
-                                                                    src={img}
-                                                                    alt={`Step ${item.step}`}
-                                                                    className="w-40 md:w-48 h-28 object-cover rounded-xl border border-neutral-200 shrink-0 hover:border-primary-400 transition-all"
-                                                                    onError={(
-                                                                        e,
-                                                                    ) => {
-                                                                        e.target.src =
-                                                                            "https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?q=80&w=2071&auto=format&fit=crop";
-                                                                    }}
-                                                                />
-                                                            ),
-                                                        )}
-                                                    </div>
-                                                )}
+                                            {item.images && item.images.length > 0 && (
+                                                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                                                    {item.images.map((img, imgIdx) => (
+                                                        <img
+                                                            key={imgIdx}
+                                                            src={img}
+                                                            alt={`Step ${item.step}`}
+                                                            className="w-40 md:w-48 h-28 object-cover rounded-xl border border-neutral-200 shrink-0 hover:border-primary-400 transition-all"
+                                                            onError={(e) => {
+                                                                e.target.src =
+                                                                    "https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?q=80&w=2071&auto=format&fit=crop";
+                                                            }}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
@@ -253,34 +260,57 @@ export default function Detail({ trip }) {
 
                     {/* RIGHT SIDEBAR */}
                     <div className="lg:col-span-1 space-y-6">
-                        {/* MAP CARD */}
-                        <div className="bg-white p-4 rounded-2xl shadow-sm border border-neutral-200">
-                            <div className="mb-3">
-                                <h3 className="text-[15px] font-bold text-neutral-900">
-                                    Lokasi Trip
-                                </h3>
 
-                                <p className="text-xs text-neutral-500">
-                                    {mapQuery}
-                                </p>
+                        {/* MAP CARD — react-leaflet + Nominatim */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 overflow-hidden">
+                            <div className="px-4 pt-4 pb-2">
+                                <h3 className="text-[15px] font-bold text-neutral-900">Lokasi Trip</h3>
+                                <p className="text-xs text-neutral-500 mt-0.5">{currentTrip.location}</p>
                             </div>
 
-                            <LocationMap
-                                query={mapQuery}
-                                label={mapLabel}
-                                height={280}
-                                zoom={12}
-                            />
+                            {/* Peta react-leaflet */}
+                            <div className="h-52 bg-neutral-200 relative z-0">
+                                <MapContainer
+                                    key={`${position[0]}-${position[1]}`}
+                                    center={position}
+                                    zoom={13}
+                                    scrollWheelZoom={false}
+                                    className="w-full h-full z-0"
+                                >
+                                    <TileLayer
+                                        attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                    />
+                                    <Marker position={position}>
+                                        <Popup>
+                                            <b>{currentTrip.title}</b><br />
+                                            {currentTrip.location}
+                                        </Popup>
+                                    </Marker>
+                                </MapContainer>
+
+                                {/* Tombol buka Google Maps */}
+                                <Button
+                                    size="sm"
+                                    className="absolute bottom-3 right-3 z-[1000] bg-primary-600 text-white shadow-md hover:bg-primary-700 text-xs px-3 py-1.5"
+                                    onClick={() =>
+                                        window.open(
+                                            `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(currentTrip.location + ", Indonesia")}`,
+                                            "_blank"
+                                        )
+                                    }
+                                >
+                                    <FaMapMarkerAlt className="inline mr-1" />
+                                    Buka di Google Maps
+                                </Button>
+                            </div>
                         </div>
 
                         {/* Host Card */}
                         <div className="bg-white p-5 rounded-2xl shadow-sm border border-neutral-200 flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <img
-                                    src={
-                                        currentTrip.host.avatar ||
-                                        "https://i.pravatar.cc/150?u=kingsman"
-                                    }
+                                    src={currentTrip.host.avatar || "https://i.pravatar.cc/150?u=kingsman"}
                                     className="w-12 h-12 rounded-full border border-neutral-200 object-cover"
                                     alt={currentTrip.host.name}
                                 />
@@ -292,15 +322,9 @@ export default function Detail({ trip }) {
                                         {currentTrip.host.name}
                                     </h4>
                                     <div className="text-xs font-medium">
-                                        <span className="text-orange-500">
-                                            {currentTrip.host.role}
-                                        </span>
-                                        <span className="text-neutral-400 mx-1">
-                                            •
-                                        </span>
-                                        <span className="text-neutral-500">
-                                            {currentTrip.host.badge}
-                                        </span>
+                                        <span className="text-orange-500">{currentTrip.host.role}</span>
+                                        <span className="text-neutral-400 mx-1">•</span>
+                                        <span className="text-neutral-500">{currentTrip.host.badge}</span>
                                     </div>
                                 </div>
                             </div>
@@ -311,65 +335,37 @@ export default function Detail({ trip }) {
 
                         {/* Pricing Card */}
                         <div className="bg-white p-6 rounded-2xl shadow-sm border border-neutral-200">
-                            <h3 className="text-[17px] font-bold text-neutral-900 mb-2">
-                                Total Harga
-                            </h3>
+                            <h3 className="text-[17px] font-bold text-neutral-900 mb-2">Total Harga</h3>
                             <div className="flex items-end gap-1 mb-6">
                                 <span className="text-3xl font-bold text-primary-600">
-                                    Rp{" "}
-                                    {currentTrip.price.toLocaleString("id-ID")}
+                                    Rp {currentTrip.price.toLocaleString("id-ID")}
                                 </span>
-                                <span className="text-sm text-neutral-500 mb-1">
-                                    / orang
-                                </span>
+                                <span className="text-sm text-neutral-500 mb-1">/ orang</span>
                             </div>
 
                             <div className="space-y-4 mb-6">
-                                {currentTrip.facilities &&
-                                currentTrip.facilities.length > 0 ? (
-                                    currentTrip.facilities.map(
-                                        (facility, index) => {
-                                            const IconComponent = getIcon(
-                                                facility.icon,
-                                            );
-
-                                            return (
-                                                <div
-                                                    key={index}
-                                                    className="flex items-center gap-3 text-sm text-neutral-700 font-medium"
-                                                >
-                                                    <IconComponent className="text-neutral-500 text-lg shrink-0" />
-                                                    {facility.name}
-                                                </div>
-                                            );
-                                        },
-                                    )
+                                {currentTrip.facilities && currentTrip.facilities.length > 0 ? (
+                                    currentTrip.facilities.map((facility, index) => {
+                                        const IconComponent = getIcon(facility.icon);
+                                        return (
+                                            <div key={index} className="flex items-center gap-3 text-sm text-neutral-700 font-medium">
+                                                <IconComponent className="text-neutral-400 text-[17px] shrink-0" />
+                                                {facility.name}
+                                            </div>
+                                        );
+                                    })
                                 ) : (
-                                    <>
-                                        <div className="flex items-center gap-3 text-sm text-neutral-700 font-medium">
-                                            <FaCarSide className="text-neutral-500 text-lg shrink-0" />
-                                            Perjalanan bandara
-                                        </div>
-
-                                        <div className="flex items-center gap-3 text-sm text-neutral-700 font-medium">
-                                            <FaBed className="text-neutral-500 text-lg shrink-0" />
-                                            Hotel Bawangan
-                                        </div>
-
-                                        <div className="flex items-center gap-3 text-sm text-neutral-700 font-medium">
-                                            <FaUtensils className="text-neutral-500 text-lg shrink-0" />
-                                            Sarapan setiap hari dan makan malam
-                                        </div>
-                                    </>
+                                    <p className="text-sm text-neutral-500 italic">
+                                        Tidak ada fasilitas khusus (Backpacker Style)
+                                    </p>
                                 )}
                             </div>
 
                             <div className="bg-orange-50 border border-orange-200/60 rounded-xl p-4 flex items-start gap-3">
                                 <IoMdInformationCircleOutline className="text-orange-600 text-xl shrink-0 mt-0.5" />
                                 <p className="text-xs text-orange-800 leading-relaxed font-medium">
-                                    Dapat dikembalikan sepenuhnya (refund) jika
-                                    dibatalkan 7 hari sebelum keberangkatan.
-                                    Tidak termasuk tiket pesawat.
+                                    Dapat dikembalikan sepenuhnya (refund) jika dibatalkan 7 hari
+                                    sebelum keberangkatan. Tidak termasuk tiket pesawat.
                                 </p>
                             </div>
                         </div>
@@ -381,23 +377,15 @@ export default function Detail({ trip }) {
             <div className="fixed bottom-0 left-0 w-full bg-white border-t border-neutral-200 shadow-[0_-4px_15px_rgba(0,0,0,0.03)] z-[60]">
                 <Container className="py-4 flex flex-col md:flex-row items-center justify-between gap-4">
                     <div className="hidden md:block">
-                        <p className="text-sm text-neutral-500 mb-0.5 font-medium">
-                            Pesan perjalanan anda sekarang
-                        </p>
-                        <h3 className="text-lg font-bold text-neutral-900">
-                            {currentTrip.title}
-                        </h3>
+                        <p className="text-sm text-neutral-500 mb-0.5 font-medium">Pesan perjalanan anda sekarang</p>
+                        <h3 className="text-lg font-bold text-neutral-900">{currentTrip.title}</h3>
                     </div>
                     <div className="flex items-center justify-between md:justify-end w-full md:w-auto gap-5 md:gap-8">
                         <div className="text-right">
-                            <p className="text-[13px] text-neutral-500 mb-0.5 font-medium">
-                                Mulai dari
-                            </p>
+                            <p className="text-[13px] text-neutral-500 mb-0.5 font-medium">Mulai dari</p>
                             <p className="text-xl font-bold text-neutral-900">
                                 Rp {currentTrip.price.toLocaleString("id-ID")}{" "}
-                                <span className="text-sm font-medium text-neutral-500">
-                                    / orang
-                                </span>
+                                <span className="text-sm font-medium text-neutral-500">/ orang</span>
                             </p>
                         </div>
                         <div className="flex items-center gap-3">
@@ -408,8 +396,7 @@ export default function Detail({ trip }) {
                                 size="md"
                                 className="px-6 md:px-8 font-semibold gap-2 shadow-sm rounded-xl"
                             >
-                                Booking Sekarang{" "}
-                                <FaArrowRight className="text-sm" />
+                                Booking Sekarang <FaArrowRight className="text-sm" />
                             </Button>
                             <button className="w-11 h-11 rounded-full border border-neutral-300 flex items-center justify-center text-neutral-500 hover:text-red-500 hover:border-red-500 hover:bg-red-50 transition-colors bg-white shrink-0">
                                 <FaRegHeart className="text-[17px]" />
