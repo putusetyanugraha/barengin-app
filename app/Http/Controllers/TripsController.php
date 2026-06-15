@@ -67,7 +67,7 @@ class TripsController extends Controller
                 'guide_rating' => $guiderRating ? number_format($guiderRating, 1) : '0',
                 'guide_reviews' => $guiderReviews,
                 'guide_badge' => 'Expert Guide',
-                'image' => $trip->image ?? '/assets/trips/bromo.jpg',
+                'image' => $this->resolveTripImage($trip->image),
                 'liked' => isset($likedTripIds[$trip->id]),
             ];
         });
@@ -184,7 +184,7 @@ class TripsController extends Controller
             'joined_count' => $joined, // <--- Pakai data asli
             'capacity' => $trip->people_amount,
             'remaining_quota' => $trip->people_amount - $joined, // <--- Hitungan sisa kursi akurat
-            'image' => $trip->image ?? '/assets/trips/bromo.jpg',
+            'image' => $this->resolveTripImage($trip->image),
         ];
 
         return Inertia::render('TripBareng/Checkout', [
@@ -332,12 +332,33 @@ class TripsController extends Controller
             'trip_title' => $trip->name,
             'date_range' => $startDate->format('d M') . ' - ' . $endDate->format('d M Y'),
             'quantity' => 1,
-            'image' => $trip->image ?? '/assets/trips/bromo.jpg',
+            'image' => $this->resolveTripImage($trip->image),
             'friends_waiting' => $joined, // <-- Ganti rand(3, 15) menjadi data asli ($joined)
         ];
 
         return Inertia::render('TripBareng/Success', [
             'order' => $order,
         ]);
+    }
+
+    /**
+     * Ubah path gambar trip dari DB menjadi URL yang bisa dipakai <img>.
+     * - kosong  -> gambar contoh
+     * - http/.. -> dipakai apa adanya
+     * - relatif -> diarahkan ke storage link
+     */
+    private function resolveTripImage(?string $path): string
+    {
+        $fallback = '/assets/trip-bareng/list-trip/gunung_bromo/trip_bareng-gunung_bromo-1.jpg';
+
+        if (! $path) {
+            return $fallback;
+        }
+
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://') || str_starts_with($path, '/')) {
+            return $path;
+        }
+
+        return '/storage/' . $path;
     }
 }

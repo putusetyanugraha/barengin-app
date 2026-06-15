@@ -11,6 +11,7 @@ import {
     FaCalendarAlt, FaRegClock, FaUserFriends, FaCheckCircle,
     FaMapMarkerAlt, FaCar, FaInfoCircle, FaStar, FaHeart, FaRegHeart
 } from "react-icons/fa";
+import { BsChatDots } from "react-icons/bs";
 
 export default function Show({ trip }) {
     const [position, setPosition] = useState([-6.1751, 106.8272]);
@@ -102,16 +103,41 @@ export default function Show({ trip }) {
                                             <FaStar className="text-warning-500"/> {trip.organizer.rating} ({trip.organizer.reviews} ulasan)
                                         </div>
                                     </div>
-                                    <Button variant="outline" size="sm"onClick={handleChatOrganizer}>Chat Penyelenggara</Button>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                        <Button variant="outline" size="sm" className="gap-1.5" onClick={handleChatOrganizer}>
+                                            <BsChatDots className="text-sm" />
+                                            Chat Penyelenggara
+                                        </Button>
+                                        <button
+                                            type="button"
+                                            onClick={handleToggleLike}
+                                            aria-pressed={isLiked}
+                                            aria-label={isLiked ? "Batal sukai" : "Sukai"}
+                                            className={`h-9 w-9 shrink-0 rounded-full border flex items-center justify-center transition-colors ${
+                                                isLiked
+                                                    ? "border-red-500 text-red-500 bg-red-50"
+                                                    : "border-neutral-300 text-neutral-500 hover:text-red-500 hover:border-red-500 hover:bg-red-50"
+                                            }`}
+                                        >
+                                            {isLiked ? (
+                                                <FaHeart className="text-sm" />
+                                            ) : (
+                                                <FaRegHeart className="text-sm" />
+                                            )}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                             
                             {/* Gambar Bus */}
                             <div className="w-full md:w-1/3 bg-neutral-100 min-h-[250px] md:min-h-[200px]">
-                                <img 
-                                    src={trip.img_name ? `/storage/${trip.img_name}` : '/assets/terminal-cibubur.jpg'} 
-                                    alt="Bus" 
-                                    className="w-full h-full object-cover" 
+                                <img
+                                    src={trip.img_name ? `/storage/${trip.img_name}` : '/assets/pergi-bareng/PergiBarengHeader.avif'}
+                                    alt={trip.title}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        e.target.src = '/assets/pergi-bareng/PergiBarengHeader.avif';
+                                    }}
                                 />
                             </div>
                         </div>
@@ -266,28 +292,9 @@ export default function Show({ trip }) {
                             <div className="bg-white rounded-2xl border border-neutral-200 p-4">
                                 <p className="text-xs text-neutral-500 mb-1">Ikut pergi bareng sekarang</p>
                                 <p className="text-sm font-bold mb-4">{trip.title}</p>
-                                <div className="flex items-center gap-3">
-                                    <Button isButtonLink href={`/pergi-bareng/${trip.id}/join`} type="primary" className="flex-1">
-                                        Ikut Sekarang &rarr;
-                                    </Button>
-                                    <button
-                                        type="button"
-                                        onClick={handleToggleLike}
-                                        aria-pressed={isLiked}
-                                        aria-label={isLiked ? "Batal sukai" : "Sukai"}
-                                        className={`h-11 w-11 shrink-0 rounded-full border flex items-center justify-center transition-colors ${
-                                            isLiked
-                                                ? "border-red-500 text-red-500 bg-red-50"
-                                                : "border-neutral-300 text-neutral-500 hover:text-red-500 hover:border-red-500 hover:bg-red-50"
-                                        }`}
-                                    >
-                                        {isLiked ? (
-                                            <FaHeart className="text-[17px]" />
-                                        ) : (
-                                            <FaRegHeart className="text-[17px]" />
-                                        )}
-                                    </button>
-                                </div>
+                                <Button isButtonLink href={`/pergi-bareng/${trip.id}/join`} type="primary" className="w-full">
+                                    Ikut Sekarang &rarr;
+                                </Button>
                             </div>
                         </div>
                     </div>

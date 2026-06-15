@@ -112,7 +112,7 @@ class PergiBarengController extends Controller
 
             return [
                 'id' => $trip->id,
-                'image' => $trip->img_name ? '/storage/' . $trip->img_name : '/assets/terminal-cibubur.jpg', 
+                'image' => $trip->img_name ? '/storage/' . $trip->img_name : '/assets/pergi-bareng/PergiBarengHeader.avif',
                 'title' => $trip->name,
                 'address' => $trip->departure_loc,
                 'date' => $parsedDate->translatedFormat('d M y'),

@@ -9,6 +9,7 @@ use App\Models\Trip;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -33,6 +34,7 @@ class ProfileHistoryController extends Controller
         return inertia('ProfileHistory/Index', [
             'profile'           => $this->profilePayload($user),
             'transactions'      => $this->transactions($user),
+            'jalan_bareng'      => $this->jalanBarengHistory($user),
             'trip_favorites'    => $this->tripFavorites($user),
             'pergi_barengs'     => $this->pergiBarengs($user),
             'jastip_favorites'  => $this->jastipFavorites($user),
@@ -127,9 +129,23 @@ class ProfileHistoryController extends Controller
 
     private function mapTripTransaction(Transaction $t): array
     {
-        $order = $t->trip_order;
-        $trip  = $order?->trip;
+        $order  = $t->trip_order;
+        $trip   = $order?->trip;
         $status = $this->normalizeStatus('trip', $order?->order_status);
+
+        $image = $this->resolveImage($trip?->image, '/assets/trip-bareng/list-trip/gunung_bromo/trip_bareng-gunung_bromo-1.jpg');
+        $qty   = (int) ($order?->quantity ?? 1);
+
+        // Rincian biaya (mengikuti logika checkout: layanan & asuransi @5.000/orang)
+        $service   = 5000 * $qty;
+        $insurance = 5000 * $qty;
+        $subtotal  = max(0, (float) $t->total_amount - $service - $insurance);
+
+        $guide = $trip
+            ? DB::table('users')->where('id', $trip->guider_id)->first(['id', 'full_name', 'profile_image'])
+            : null;
+
+        $guideAvatar = $this->resolveImage($guide?->profile_image, asset('assets/default-profile.png'));
 
         return [
             'id'         => $t->id,
@@ -137,12 +153,45 @@ class ProfileHistoryController extends Controller
             'type_label' => 'Pembelian Trip',
             'date_label' => Carbon::parse($t->created_at)->translatedFormat('d M Y'),
             'item_name'  => $trip?->name ?? 'Trip',
-            'image'      => $this->resolveImage($trip?->image, '/assets/trip-bareng/list-trip/gunung_bromo/trip_bareng-gunung_bromo-1.jpg'),
-            'slot'       => (int) ($order?->quantity ?? 1),
+            'image'      => $image,
+            'slot'       => $qty,
             'total'      => (float) $t->total_amount,
             'status'     => $status,
             'snap_token' => $t->snap_token,
             'detail_url' => $trip ? '/trip-bareng/' . $trip->id : null,
+            'detail'     => [
+                'order_no'       => 'TRX-' . strtoupper(substr((string) $t->id, 0, 8)),
+                'date_label'     => Carbon::parse($t->created_at)->translatedFormat('d F Y'),
+                'status_heading' => $this->statusHeading($status),
+                'payment_method' => $t->payment_method,
+                'seller'         => [
+                    'name'   => $guide?->full_name ?? 'Penyelenggara',
+                    'avatar' => $guideAvatar,
+                ],
+                'items'          => [[
+                    'name'  => $trip?->name ?? 'Trip',
+                    'image' => $image,
+                    'slot'  => $qty,
+                ]],
+                'shipping'       => null,
+                'fees'           => [
+                    ['label' => 'Total Harga', 'amount' => $subtotal],
+                    ['label' => 'Biaya Layanan', 'amount' => $service],
+                    ['label' => 'Biaya Asuransi Trip', 'amount' => $insurance],
+                ],
+                'total'          => (float) $t->total_amount,
+            ],
+            'review_target' => $trip ? [
+                'type'  => 'trip',
+                'id'    => $trip->id,
+                'title' => $trip->name,
+                'image' => $image,
+                'user'  => [
+                    'id'     => $guide?->id ?? $trip->guider_id,
+                    'name'   => $guide?->full_name ?? 'Pemandu',
+                    'avatar' => $guideAvatar,
+                ],
+            ] : null,
         ];
     }
 
@@ -154,19 +203,186 @@ class ProfileHistoryController extends Controller
         $itemCount  = $order?->jastip_order_items?->count() ?? 1;
         $status     = $this->normalizeStatus('jastip', $order?->order_status);
 
+        $image = $this->resolveImage($firstImage, '/assets/default-image.png');
+
+        $items = $order?->jastip_order_items?->map(function ($oi) {
+            $img = $oi->jastip_item?->jastip_item_images?->first()?->image_name;
+            return [
+                'name'  => $oi->jastip_item?->name ?? 'Item',
+                'image' => $this->resolveImage($img, '/assets/default-image.png'),
+                'slot'  => (int) $oi->quantity,
+            ];
+        })->values()->all() ?? [];
+
+        $fees = $order
+            ? DB::table('jastip_orders_fees')
+                ->where('jastip_order_id', $order->id)
+                ->get()
+                ->map(fn ($f) => ['label' => $f->fee_name, 'amount' => (float) $f->amount])
+                ->all()
+            : [];
+
         return [
             'id'         => $t->id,
             'kind'       => 'jastip',
             'type_label' => 'Pembelian Jastip',
             'date_label' => Carbon::parse($t->created_at)->translatedFormat('d M Y'),
             'item_name'  => $firstItem?->name ?? 'Jastip',
-            'image'      => $this->resolveImage($firstImage, '/assets/default-image.png'),
+            'image'      => $image,
             'slot'       => (int) $itemCount,
             'total'      => (float) $t->total_amount,
             'status'     => $status,
             'snap_token' => $t->snap_token,
             'detail_url' => null,
+            'detail'     => [
+                'order_no'       => 'TRX-' . strtoupper(substr((string) $t->id, 0, 8)),
+                'date_label'     => Carbon::parse($t->created_at)->translatedFormat('d F Y'),
+                'status_heading' => $this->statusHeading($status),
+                'payment_method' => $t->payment_method,
+                'seller'         => null,
+                'items'          => count($items) > 0 ? $items : [[
+                    'name'  => $firstItem?->name ?? 'Jastip',
+                    'image' => $image,
+                    'slot'  => (int) $itemCount,
+                ]],
+                'shipping'       => $order && $order->use_shipping
+                    ? ['address' => $order->shipping_address]
+                    : null,
+                'fees'           => $fees,
+                'total'          => (float) $t->total_amount,
+            ],
         ];
+    }
+
+    /**
+     * Riwayat "Jalan Bareng" (Trip Bareng & Pergi Bareng yang sudah diikuti)
+     * untuk diberi ulasan. Dua sumber digabung lalu dipaginasi manual.
+     */
+    private function jalanBarengHistory(User $user)
+    {
+        $tripDefault  = '/assets/trip-bareng/list-trip/gunung_bromo/trip_bareng-gunung_bromo-1.jpg';
+        $pbDefault    = '/assets/pergi-bareng/PergiBarengHeader.avif';
+        $avatarFallback = asset('assets/default-profile.png');
+
+        // Trip yang sudah dibayar oleh user
+        $trips = DB::table('trip_orders')
+            ->join('trips', 'trip_orders.trip_id', '=', 'trips.id')
+            ->join('users', 'trips.guider_id', '=', 'users.id')
+            ->where('trip_orders.user_id', $user->id)
+            ->where('trip_orders.order_status', 'paid')
+            ->select(
+                'trips.id', 'trips.name', 'trips.image', 'trips.location',
+                'trips.start_date', 'trips.end_date',
+                'users.id as guide_id', 'users.full_name as guide_name', 'users.profile_image as guide_image',
+            )
+            ->distinct()
+            ->get()
+            ->map(function ($t) use ($user, $tripDefault, $avatarFallback) {
+                $reviewed = DB::table('user_trip_ratings')
+                    ->where('user_id', $user->id)
+                    ->where('trips_id', $t->id)
+                    ->exists();
+
+                $image = $this->resolveImage($t->image, $tripDefault);
+
+                return [
+                    'key'        => 'trip-' . $t->id,
+                    'type'       => 'trip',
+                    'type_label' => 'Trip Bareng',
+                    'title'      => $t->name,
+                    'subtitle'   => $t->location ?? 'Indonesia',
+                    'image'      => $image,
+                    'date_label' => Carbon::parse($t->start_date)->format('d M Y') . ' - ' . Carbon::parse($t->end_date)->format('d M Y'),
+                    'sort_date'  => Carbon::parse($t->end_date)->timestamp,
+                    'reviewed'   => $reviewed,
+                    'user'       => [
+                        'name'   => $t->guide_name,
+                        'avatar' => $this->resolveImage($t->guide_image, $avatarFallback),
+                    ],
+                    'review_target' => [
+                        'type'  => 'trip',
+                        'id'    => $t->id,
+                        'title' => $t->name,
+                        'image' => $image,
+                        'user'  => [
+                            'id'     => $t->guide_id,
+                            'name'   => $t->guide_name,
+                            'avatar' => $this->resolveImage($t->guide_image, $avatarFallback),
+                        ],
+                    ],
+                ];
+            });
+
+        // Pergi Bareng yang diikuti user
+        $pergi = DB::table('pergi_bareng_participants')
+            ->join('pergi_barengs', 'pergi_bareng_participants.pergi_bareng_id', '=', 'pergi_barengs.id')
+            ->join('users', 'pergi_barengs.initiator_id', '=', 'users.id')
+            ->where('pergi_bareng_participants.user_id', $user->id)
+            ->select(
+                'pergi_barengs.id', 'pergi_barengs.name', 'pergi_barengs.img_name',
+                'pergi_barengs.departure_loc', 'pergi_barengs.time_appointment',
+                'users.id as org_id', 'users.full_name as org_name', 'users.profile_image as org_image',
+            )
+            ->distinct()
+            ->get()
+            ->map(function ($p) use ($user, $pbDefault, $avatarFallback) {
+                $reviewed = DB::table('user_ratings')
+                    ->where('user_id', $user->id)
+                    ->where('rated_user_id', $p->org_id)
+                    ->where('type', 'pergi_bareng')
+                    ->exists();
+
+                $image = $this->resolveImage($p->img_name, $pbDefault);
+
+                return [
+                    'key'        => 'pb-' . $p->id,
+                    'type'       => 'pergi_bareng',
+                    'type_label' => 'Pergi Bareng',
+                    'title'      => $p->name,
+                    'subtitle'   => $p->departure_loc,
+                    'image'      => $image,
+                    'date_label' => Carbon::parse($p->time_appointment)->translatedFormat('d M Y - H:i'),
+                    'sort_date'  => Carbon::parse($p->time_appointment)->timestamp,
+                    'reviewed'   => $reviewed,
+                    'user'       => [
+                        'name'   => $p->org_name,
+                        'avatar' => $this->resolveImage($p->org_image, $avatarFallback),
+                    ],
+                    'review_target' => [
+                        'type'  => 'pergi_bareng',
+                        'id'    => $p->id,
+                        'title' => $p->name,
+                        'image' => $image,
+                        'user'  => [
+                            'id'     => $p->org_id,
+                            'name'   => $p->org_name,
+                            'avatar' => $this->resolveImage($p->org_image, $avatarFallback),
+                        ],
+                    ],
+                ];
+            });
+
+        $merged = $trips->concat($pergi)->sortByDesc('sort_date')->values();
+
+        $perPage = 5;
+        $page    = max(1, (int) request()->query('jb_page', 1));
+        $items   = $merged->forPage($page, $perPage)->values();
+
+        return new LengthAwarePaginator($items, $merged->count(), $perPage, $page, [
+            'path'     => request()->url(),
+            'pageName' => 'jb_page',
+            'query'    => request()->query(),
+        ]);
+    }
+
+    private function statusHeading(string $status): string
+    {
+        return match ($status) {
+            'completed'       => 'Pesanan Selesai',
+            'in_progress'     => 'Sedang Diproses',
+            'waiting_payment' => 'Menunggu Pembayaran',
+            default           => 'Transaksi',
+        };
     }
 
     /**

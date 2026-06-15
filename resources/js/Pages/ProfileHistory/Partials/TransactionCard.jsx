@@ -1,6 +1,8 @@
-import { Link } from "@inertiajs/react";
+import { useState } from "react";
 import { FaSuitcaseRolling, FaUtensils, FaDownload } from "react-icons/fa";
 import Button from "@/Components/Button";
+import TransactionDetailModal from "./TransactionDetailModal";
+import { downloadReceipt } from "./receipt";
 
 const STATUS_CONFIG = {
     completed: {
@@ -17,7 +19,7 @@ const STATUS_CONFIG = {
     },
 };
 
-export default function TransactionCard({ transaction, onPay }) {
+export default function TransactionCard({ transaction, onPay, onReview }) {
     const {
         kind,
         type_label,
@@ -33,6 +35,8 @@ export default function TransactionCard({ transaction, onPay }) {
 
     const statusConfig = STATUS_CONFIG[status] || STATUS_CONFIG.completed;
     const Icon = kind === "jastip" ? FaUtensils : FaSuitcaseRolling;
+
+    const [showDetail, setShowDetail] = useState(false);
 
     return (
         <div className="rounded-2xl border border-neutral-200 bg-white p-5">
@@ -94,40 +98,53 @@ export default function TransactionCard({ transaction, onPay }) {
                 <div className="flex flex-wrap items-center gap-2">
                     <TransactionActions
                         status={status}
-                        detailUrl={detail_url}
                         snapToken={snap_token}
                         onPay={onPay}
+                        onViewDetail={() => setShowDetail(true)}
+                        onDownload={() => downloadReceipt(transaction)}
                     />
                 </div>
             </div>
+
+            {showDetail && (
+                <TransactionDetailModal
+                    transaction={transaction}
+                    onClose={() => setShowDetail(false)}
+                    onReview={
+                        onReview
+                            ? (target) => {
+                                  setShowDetail(false);
+                                  onReview(target);
+                              }
+                            : undefined
+                    }
+                />
+            )}
         </div>
     );
 }
 
-function TransactionActions({ status, detailUrl, snapToken, onPay }) {
+function TransactionActions({ status, snapToken, onPay, onViewDetail, onDownload }) {
     if (status === "completed") {
         return (
             <>
-                {detailUrl && (
-                    <Button
-                        isButtonLink
-                        href={detailUrl}
-                        type="neutral"
-                        variant="outline"
-                        size="sm"
-                        rounded={false}
-                        className="rounded-lg"
-                    >
-                        Lihat Detail
-                    </Button>
-                )}
+                <Button
+                    type="neutral"
+                    variant="outline"
+                    size="sm"
+                    rounded={false}
+                    className="rounded-lg"
+                    onClick={onViewDetail}
+                >
+                    Lihat Detail
+                </Button>
                 <Button
                     type="primary"
                     variant="solid"
                     size="sm"
                     rounded={false}
                     className="gap-2 rounded-lg"
-                    onClick={() => window.print()}
+                    onClick={onDownload}
                 >
                     <FaDownload className="h-3.5 w-3.5" />
                     Download Bukti
@@ -160,7 +177,7 @@ function TransactionActions({ status, detailUrl, snapToken, onPay }) {
             size="sm"
             rounded={false}
             className="rounded-lg"
-            {...(detailUrl ? { isButtonLink: true, href: detailUrl } : {})}
+            onClick={onViewDetail}
         >
             Pantau Barang
         </Button>

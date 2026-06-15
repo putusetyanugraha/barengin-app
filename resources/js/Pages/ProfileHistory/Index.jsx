@@ -10,10 +10,13 @@ import PergiBarengCard from "@/Components/PergiBarengCard";
 import ProfileSidebar from "./Partials/ProfileSidebar";
 import ProfileEditForm from "./Partials/ProfileEditForm";
 import TransactionCard from "./Partials/TransactionCard";
+import JalanBarengCard from "./Partials/JalanBarengCard";
+import ReviewModal from "./Partials/ReviewModal";
 // import JastipFavoriteCard from "./Partials/JastipFavoriteCard"; // Jastip dinonaktifkan sementara
 
 import {
     FaReceipt,
+    FaRoute,
     // FaUtensils, // Jastip dinonaktifkan sementara
     FaMapMarkedAlt,
     FaCarSide,
@@ -21,6 +24,7 @@ import {
 
 const TABS = [
     { key: "transactions", label: "Transaksi Anda", pageParam: "tx_page", icon: FaReceipt },
+    { key: "history", label: "History Jalan Bareng", pageParam: "jb_page", icon: FaRoute },
     // Jastip dinonaktifkan sementara (fitur jastip kemungkinan dihapus)
     // { key: "jastip", label: "Jastip Kesukaan", pageParam: "jastip_page", icon: FaUtensils },
     { key: "trips", label: "Trip Kesukaan", pageParam: "trip_page", icon: FaMapMarkedAlt },
@@ -30,6 +34,7 @@ const TABS = [
 export default function ProfileHistory({
     profile,
     transactions,
+    jalan_bareng,
     trip_favorites,
     pergi_barengs,
     jastip_favorites,
@@ -39,6 +44,7 @@ export default function ProfileHistory({
     const [activeTab, setActiveTab] = useState(tab);
     const [editing, setEditing] = useState(false);
     const [snapReady, setSnapReady] = useState(false);
+    const [reviewTarget, setReviewTarget] = useState(null);
 
     // Muat Midtrans Snap agar tombol "Bayar Sekarang" bisa membuka popup
     useEffect(() => {
@@ -144,6 +150,30 @@ export default function ProfileHistory({
                                         key={tx.id}
                                         transaction={tx}
                                         onPay={handlePay}
+                                        onReview={setReviewTarget}
+                                    />
+                                ))}
+                            </div>
+                        </TabSection>
+                    )}
+
+                    {activeTab === "history" && (
+                        <TabSection
+                            paginator={jalan_bareng}
+                            pageParam="jb_page"
+                            onPageChange={goToPage}
+                            empty={{
+                                icon: <FaRoute className="h-12 w-12" />,
+                                title: "Belum ada riwayat jalan bareng",
+                                desc: "Trip & pergi bareng yang sudah Anda ikuti akan muncul di sini untuk diulas.",
+                            }}
+                        >
+                            <div className="space-y-4">
+                                {jalan_bareng.data.map((item) => (
+                                    <JalanBarengCard
+                                        key={item.key}
+                                        item={item}
+                                        onReview={setReviewTarget}
                                     />
                                 ))}
                             </div>
@@ -213,6 +243,13 @@ export default function ProfileHistory({
                     )}
                 </section>
             </div>
+
+            {reviewTarget && (
+                <ReviewModal
+                    target={reviewTarget}
+                    onClose={() => setReviewTarget(null)}
+                />
+            )}
         </Container>
     );
 }

@@ -15,6 +15,7 @@ use App\Http\Controllers\ForumProfileController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\MidtransController;
 use App\Http\Controllers\PergiBarengController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileHistoryController;
 use App\Http\Controllers\TripsController;
@@ -102,6 +103,9 @@ Route::middleware('auth')->group(function () {
 
     // Favorites (Like) untuk Trip & Pergi Bareng
     Route::post('/favorites/toggle', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
+
+    // Ulasan Trip / Pergi Bareng
+    Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
 
     // Profile History
     Route::get('/profile-history', [ProfileHistoryController::class, 'index'])->name('profile-history');
