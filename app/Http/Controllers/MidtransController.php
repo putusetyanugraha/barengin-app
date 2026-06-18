@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Conversation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -29,6 +30,28 @@ class MidtransController extends Controller
         );
 
         return response()->json(['message' => 'ok']);
+    }
+
+    /**
+     * Sinkronkan semua transaksi pending/unpaid milik seorang user.
+     */
+    public static function syncPendingForUser(int $userId): void
+    {
+        $ids = DB::table('transactions as t')
+            ->where('t.user_id', $userId)
+            ->where(function ($q) {
+                $q->whereIn('t.id', DB::table('trip_orders')
+                        ->whereIn('order_status', ['pending', 'unpaid'])
+                        ->select('transaction_id'))
+                    ->orWhereIn('t.id', DB::table('jastip_orders')
+                        ->whereIn('order_status', ['pending', 'unpaid'])
+                        ->select('transaction_id'));
+            })
+            ->pluck('t.id');
+
+        foreach ($ids as $id) {
+            self::syncTransaction($id);
+        }
     }
 
     /**
@@ -82,6 +105,91 @@ class MidtransController extends Controller
         DB::table('jastip_orders')
             ->where('transaction_id', $orderId)
             ->update(['order_status' => $orderStatus, 'updated_at' => now()]);
+
+        // Saat lunas: buat peserta trip & masukkan pembeli ke grup chat
+        if ($orderStatus === 'paid') {
+            self::fulfillPaidTripOrders($orderId);
+        }
+    }
+
+    /**
+     * Setelah trip order lunas: buat baris trip_participants (mengurangi kuota)
+     * dan masukkan pembeli ke grup chat. Idempotent lewat kolom fulfilled_at.
+     */
+    private static function fulfillPaidTripOrders(string $transactionId): void
+    {
+        $orders = DB::table('trip_orders')
+            ->where('transaction_id', $transactionId)
+            ->where('order_status', 'paid')
+            ->whereNull('fulfilled_at')
+            ->get();
+
+        foreach ($orders as $order) {
+            $participants = json_decode($order->participants ?? '', true);
+            $rows = [];
+
+            if (is_array($participants) && count($participants) > 0) {
+                foreach ($participants as $p) {
+                    $rows[] = [
+                        'trip_id'      => $order->trip_id,
+                        'full_name'    => mb_substr($p['name'] ?? 'Peserta', 0, 100),
+                        'paspor'       => ! empty($p['passport']) ? mb_substr($p['passport'], 0, 12) : null,
+                        'phone_number' => mb_substr((string) ($p['phone'] ?? '-'), 0, 15) ?: '-',
+                        'nik'          => mb_substr((string) ($p['nik'] ?? '-'), 0, 16) ?: '-',
+                        'created_at'   => now(),
+                        'updated_at'   => now(),
+                    ];
+                }
+            }
+
+            // Fallback bila data peserta kosong: buat sejumlah quantity
+            if (empty($rows)) {
+                for ($i = 0; $i < (int) $order->quantity; $i++) {
+                    $rows[] = [
+                        'trip_id'      => $order->trip_id,
+                        'full_name'    => 'Peserta ' . ($i + 1),
+                        'paspor'       => null,
+                        'phone_number' => '-',
+                        'nik'          => '-',
+                        'created_at'   => now(),
+                        'updated_at'   => now(),
+                    ];
+                }
+            }
+
+            if (! empty($rows)) {
+                DB::table('trip_participants')->insert($rows);
+            }
+
+            self::addBuyerToTripGroup((int) $order->trip_id, (int) $order->user_id);
+
+            DB::table('trip_orders')
+                ->where('id', $order->id)
+                ->update(['fulfilled_at' => now(), 'updated_at' => now()]);
+        }
+    }
+
+    /**
+     * Buat (jika belum ada) grup chat trip & masukkan pembeli + pemandu.
+     */
+    private static function addBuyerToTripGroup(int $tripId, int $userId): void
+    {
+        $trip = DB::table('trips')->where('id', $tripId)->first();
+        if (! $trip) {
+            return;
+        }
+
+        $conversation = Conversation::firstOrCreate(
+            ['trip_id' => $tripId, 'is_group' => true],
+            ['pergi_bareng_id' => null],
+        );
+
+        $members  = collect([$userId, $trip->guider_id])->filter()->unique();
+        $existing = $conversation->participants()->pluck('users.id');
+
+        foreach ($members->diff($existing) as $uid) {
+            $conversation->participants()->attach($uid, ['last_read_at' => now()]);
+        }
     }
 
     private static function configure(): void

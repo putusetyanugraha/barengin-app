@@ -177,6 +177,13 @@ class TripsController extends Controller
             ],
             'itinerary'   => $itinerary,
             'facilities'  => $facilities,
+            'already_joined' => $request->user()
+                ? DB::table('trip_orders')
+                    ->where('trip_id', $trip->id)
+                    ->where('user_id', $request->user()->id)
+                    ->where('order_status', 'paid')
+                    ->exists()
+                : false,
             'liked'       => $request->user()
                 ? DB::table('favorites')
                     ->where('user_id', $request->user()->id)
@@ -196,8 +203,8 @@ class TripsController extends Controller
         $trip = DB::table('trips')->where('id', $id)->first();
         if (!$trip) abort(404);
 
-        // [PERBAIKAN]: Hitung jumlah partisipan riil dari database (Bukan rand() lagi)
-        $joined = DB::table('trip_participants')->where('trip_id', $trip->id)->count();
+        // Jumlah peserta = user unik yang sudah membayar (konsisten dgn detail & index)
+        $joined = $this->joinedCount($trip->id);
 
         $trip_check_out = [
             'id' => $trip->id,
@@ -229,7 +236,7 @@ class TripsController extends Controller
         $participants = $request->input('participants', []);
 
         // Validasi sisa kuota
-        $joined    = DB::table('trip_participants')->where('trip_id', $id)->count();
+        $joined    = $this->joinedCount($id);
         $remaining = $trip->people_amount - $joined;
 
         if ($quantity > $remaining) {
@@ -262,6 +269,7 @@ class TripsController extends Controller
                 'trip_id'        => $id,
                 'user_id'        => $user->id,
                 'quantity'       => $quantity,
+                'participants'   => json_encode($participants),
                 'total'          => $totalAmount,
                 'order_status'   => 'pending',
                 'created_at'     => now(),
@@ -337,16 +345,21 @@ class TripsController extends Controller
         }
     }
 
-    public function success($id)
+    public function success(Request $request, $id)
     {
+        // Pastikan status pembayaran tersinkron (peserta & grup chat dibuat saat lunas)
+        if ($request->user()) {
+            MidtransController::syncPendingForUser($request->user()->id);
+        }
+
         $trip = DB::table('trips')->where('id', $id)->first();
         if (!$trip) abort(404);
 
         $startDate = Carbon::parse($trip->start_date);
         $endDate = Carbon::parse($trip->end_date);
 
-        // [PERBAIKAN] Ambil jumlah partisipan asli yang sudah tergabung di trip ini dari DB
-        $joined = DB::table('trip_participants')->where('trip_id', $trip->id)->count();
+        // Jumlah peserta = user unik yang sudah membayar (konsisten dgn detail & index)
+        $joined = $this->joinedCount($trip->id);
 
         $order = [
             'transaction_id' => 'OTRIP-' . str_pad($id, 6, '0', STR_PAD_LEFT),
@@ -369,6 +382,19 @@ class TripsController extends Controller
      * - http/.. -> dipakai apa adanya
      * - relatif -> diarahkan ke storage link
      */
+    /**
+     * Jumlah peserta yang sudah bergabung = user unik yang sudah membayar.
+     * Dipakai konsisten di index, detail, checkout, & success.
+     */
+    private function joinedCount($tripId): int
+    {
+        return (int) DB::table('trip_orders')
+            ->where('trip_id', $tripId)
+            ->where('order_status', 'paid')
+            ->distinct()
+            ->count('user_id');
+    }
+
     private function resolveTripImage(?string $path): string
     {
         $fallback = '/assets/trip-bareng/list-trip/gunung_bromo/trip_bareng-gunung_bromo-1.jpg';

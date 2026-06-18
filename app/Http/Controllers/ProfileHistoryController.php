@@ -49,21 +49,7 @@ class ProfileHistoryController extends Controller
      */
     private function syncPendingTransactions(User $user): void
     {
-        $pendingIds = DB::table('transactions as t')
-            ->where('t.user_id', $user->id)
-            ->where(function ($q) {
-                $q->whereIn('t.id', DB::table('trip_orders')
-                        ->whereIn('order_status', ['pending', 'unpaid'])
-                        ->select('transaction_id'))
-                    ->orWhereIn('t.id', DB::table('jastip_orders')
-                        ->whereIn('order_status', ['pending', 'unpaid'])
-                        ->select('transaction_id'));
-            })
-            ->pluck('t.id');
-
-        foreach ($pendingIds as $id) {
-            MidtransController::syncTransaction($id);
-        }
+        MidtransController::syncPendingForUser($user->id);
     }
 
     /* ===================== DATA BUILDERS ===================== */

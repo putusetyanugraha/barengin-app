@@ -30,6 +30,7 @@ import {
     FaChevronLeft,
     FaTicketAlt,
     FaUserTie,
+    FaCheckCircle,
 } from "react-icons/fa";
 import { BsChatText } from "react-icons/bs";
 import { IoMdInformationCircleOutline } from "react-icons/io";
@@ -164,6 +165,13 @@ export default function Detail({ trip }) {
                     >
                         <FaChevronLeft className="text-sm -ml-0.5" />
                     </Link>
+
+                    {currentTrip.already_joined && (
+                        <div className="absolute top-6 right-6 md:top-8 md:right-8 z-10 flex items-center gap-2 rounded-full bg-success-600/95 px-4 py-2 text-sm font-semibold text-white shadow-lg backdrop-blur-sm">
+                            <FaCheckCircle className="text-base" />
+                            Anda sudah didalam grup trip ini!
+                        </div>
+                    )}
 
                     <div className="absolute bottom-0 left-0 w-full p-6 md:p-10 text-white">
                         <h1 className="text-4xl md:text-5xl font-bold mb-3">
