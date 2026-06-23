@@ -19,17 +19,22 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileHistoryController;
 use App\Http\Controllers\TripsController;
+use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\AdminMessageController;
+use App\Http\Controllers\ContactController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return inertia('Home/Index');
-})->name('home');
+    })->name('home');
 
-/*
-|--------------------------------------------------------------------------
-| Guest routes
-|--------------------------------------------------------------------------
-*/
+Route::post('/contact-us', [ContactController::class, 'store'])->name('contact.store');
+    
+    /*
+    |--------------------------------------------------------------------------
+    | Guest routes
+    |--------------------------------------------------------------------------
+    */
 // Auth
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'login'])->name('login');
@@ -159,9 +164,25 @@ Route::get('/trip-bareng/{id}/checkout', [TripsController::class, 'checkout'])->
 Route::post('/trip-bareng/{id}/payment', [TripsController::class, 'processPayment'])->name('trip-bareng.payment');
 Route::get('/trip-bareng/{id}/success', [TripsController::class, 'success'])->name('trip-bareng.success');
 
+// Management User
+// Route::get('/management-user', function(){
+//     $users = User::all();
 
-// test route
-Route::get('/Admin', function () {
-    return inertia('Admin/Test');
-})->name('admin'); 
+//     return inertia('Admin/ManagementUser', ['users' => $users]);
+// })->name('management-user');
 
+Route::prefix('Admin')->group(function () {
+    
+    Route::get('/', function () {
+        return inertia('Admin/Test');
+    })->name('admin'); 
+
+    Route::get('/management-user', [AdminUserController::class, 'index'])->name('management-user');
+    Route::get('/management-user/{id}/edit-role', [AdminUserController::class, 'edit'])->name('management-user.edit');
+    Route::put('/management-user/{id}', [AdminUserController::class, 'update'])->name('management-user.update');
+    Route::delete('/management-user/{id}', [AdminUserController::class, 'destroy'])->name('management-user.destroy');
+
+    Route::get('/message', [AdminMessageController::class, 'index'])->name('admin.message.index');
+    Route::delete('/message/{id}', [AdminMessageController::class, 'destroy'])->name('admin.message.destroy');
+
+});

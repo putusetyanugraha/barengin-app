@@ -23,33 +23,32 @@ export default function AdminSidebar({ isCollapsed, setIsCollapsed, isMobileOpen
             group: "PEMANDU TRIP",
             short: "TRP",
             items: [
-                { name: "Manajemen Trip", icon: <FaSuitcase />, href: "/admin/trip" },
-                { name: "Analitik Trip", icon: <FiPieChart />, href: "/admin/trip/analytics" },
+                { name: "Manajemen Trip", icon: <FaSuitcase />, href: "/Admin/trip" },
+                { name: "Analitik Trip", icon: <FiPieChart />, href: "/Admin/trip/analytics" },
             ],
         },
         {
             group: "JASTIPER",
             short: "JST",
             items: [
-                { name: "Manajemen Jastip", icon: <FiShoppingCart />, href: "/admin/jastip" },
-                { name: "Analitik Jastip", icon: <FiBarChart2 />, href: "/admin/jastip/analytics" },
+                { name: "Manajemen Jastip", icon: <FiShoppingCart />, href: "/Admin/jastip" },
+                { name: "Analitik Jastip", icon: <FiBarChart2 />, href: "/Admin/jastip/analytics" },
             ],
         },
         {
             group: "PERGI BARENG",
             short: "PBR",
             items: [
-                { name: "Manajemen Pergi Bareng", icon: <FaCar />, href: "/admin/pergi-bareng" },
-                { name: "Analitik Pergi Bareng", icon: <FiTrendingUp />, href: "/admin/pergi-bareng/analytics" },
+                { name: "Manajemen Pergi Bareng", icon: <FaCar />, href: "/Admin/pergi-bareng" },
+                { name: "Analitik Pergi Bareng", icon: <FiTrendingUp />, href: "/Admin/pergi-bareng/analytics" },
             ],
         },
         {
             group: "ADMIN",
             short: "ADM",
             items: [
-                { name: "Beranda Admin", icon: <FiHome />, href: "/admin" },
-                { name: "Manajemen User", icon: <FiUsers />, href: "/admin/users" },
-                { name: "Pesan", icon: <FiMessageSquare />, href: "/admin/messages" },
+                { name: "Manajemen User", icon: <FiUsers />, href: "/Admin/management-user" }, 
+                { name: "Pesan", icon: <FiMessageSquare />, href: "/Admin/message" },
             ],
         },
     ];

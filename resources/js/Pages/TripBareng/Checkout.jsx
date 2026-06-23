@@ -70,7 +70,7 @@ export default function Checkout({ trip, midtrans_client_key }) {
 
         const script = document.createElement("script");
         script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
-        script.setAttribute("data-client-key", midtrans_client_key || "Mid-client-mGla22pQRRj2Oeks");
+        script.setAttribute("data-client-key", midtrans_client_key || "Mid-client-XtaGQOWVJKpMUwg0");
         script.onload  = () => setSnapReady(true);
         script.onerror = () => setSnapReady(false);
         document.head.appendChild(script);
