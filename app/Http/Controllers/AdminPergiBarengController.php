@@ -110,7 +110,7 @@ class AdminPergiBarengController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
-            'date' => 'required|date',
+            'date' => 'required|date|after_or_equal:today',
             'time' => 'required|string',
             'transportation' => 'required|in:' . implode(',', self::TRANSPORTATIONS),
             'people_amount' => 'required|integer|min:1|max:100',
@@ -119,7 +119,17 @@ class AdminPergiBarengController extends Controller
             'image' => 'nullable|image|max:4096',
             'financing_estimates' => 'nullable|array',
             'financing_estimates.*' => 'nullable|string|max:255',
+        ], [
+            'date.after_or_equal' => 'Tanggal keberangkatan tidak boleh di masa lalu.',
         ]);
+
+        // Waktu keberangkatan wajib di masa depan agar tampil di halaman Pergi Bareng publik
+        $appointment = Carbon::parse($validated['date'] . ' ' . $validated['time']);
+        if ($appointment->isPast()) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'time' => 'Waktu keberangkatan harus di masa depan.',
+            ]);
+        }
 
         $imgName = null;
         if ($request->hasFile('image')) {
@@ -127,12 +137,12 @@ class AdminPergiBarengController extends Controller
             $imgName = $request->file('image')->store('pergi-bareng', 'public');
         }
 
-        $trip = DB::transaction(function () use ($validated, $imgName) {
+        $trip = DB::transaction(function () use ($validated, $imgName, $appointment) {
             $trip = PergiBareng::create([
                 'initiator_id' => Auth::id(),
                 'name' => $validated['name'],
                 'description' => $validated['description'],
-                'time_appointment' => Carbon::parse($validated['date'] . ' ' . $validated['time']),
+                'time_appointment' => $appointment,
                 'transportation' => $validated['transportation'],
                 'people_amount' => $validated['people_amount'],
                 'departure_loc' => $validated['departure_loc'],

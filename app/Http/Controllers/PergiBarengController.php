@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class PergiBarengController extends Controller
 {
@@ -196,9 +197,21 @@ class PergiBarengController extends Controller
             })->values();
         }
 
-        // 4. Kirim data ke halaman Index.jsx
+        // 4. Paginasi manual: 8 pergi bareng per halaman
+        //    (filter & sorting dilakukan di koleksi, jadi paginasi setelahnya)
+        $perPage = 8;
+        $page = LengthAwarePaginator::resolveCurrentPage('page');
+        $paginatedTrips = new LengthAwarePaginator(
+            $formattedTrips->forPage($page, $perPage)->values(),
+            $formattedTrips->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()],
+        );
+
+        // 5. Kirim data ke halaman Index.jsx
         return Inertia::render('PergiBareng/Index', [
-            'trips' => $formattedTrips,
+            'trips' => $paginatedTrips,
             'filters' => [
                 'dari'    => $dari,
                 'ke'      => $ke,

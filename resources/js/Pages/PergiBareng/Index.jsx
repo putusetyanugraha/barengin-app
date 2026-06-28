@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Head, router } from "@inertiajs/react";
 import MainLayout from "@/Layouts/MainLayout";
 import Container from "@/Components/Container";
@@ -8,22 +8,37 @@ import Select from "@/Components/Select";
 import Pagination from "@/Components/Pagination";
 import HeroSection from "./HeroSection";
 
-export default function Index({ trips = [] }) {
-    const [currentPage, setCurrentPage] = useState(1);
-    const [sortBy, setSortBy] = useState("schedule");
+export default function Index({ trips = {}, filters = {} }) {
+    const [sortBy, setSortBy] = useState(filters?.sort ?? "schedule");
 
-    // Mengirim permintaan ke backend secara otomatis saat sortBy atau currentPage berubah
-    useEffect(() => {
+    // `trips` adalah objek paginator dari Laravel (data + meta)
+    const data = trips?.data ?? [];
+    const currentPage = trips?.current_page ?? 1;
+    const lastPage = trips?.last_page ?? 1;
+
+    // Navigasi ke backend dengan tetap mempertahankan filter pencarian
+    const visit = (params) => {
         router.get(
-            window.location.pathname, // Mengambil URL saat ini dengan aman
-            { sort: sortBy, page: currentPage }, // Mengirim query data sort & page ke backend
+            window.location.pathname,
             {
-                preserveState: true, // Mencegah reset state yang ada
-                preserveScroll: true, // Mencegah layar scroll kembali ke atas saat loading
-                replace: true, // Mengganti history URL agar rapi saat kembali (back browser)
-            }
+                dari: filters?.dari || undefined,
+                ke: filters?.ke || undefined,
+                tanggal: filters?.tanggal || undefined,
+                waktu: filters?.waktu || undefined,
+                jumlah: filters?.jumlah || undefined,
+                ...params,
+            },
+            { preserveState: true, preserveScroll: true, replace: true },
         );
-    }, [sortBy, currentPage]);
+    };
+
+    const handleSort = (e) => {
+        const value = e.target.value;
+        setSortBy(value);
+        visit({ sort: value, page: 1 }); // reset ke halaman 1 saat ganti urutan
+    };
+
+    const handlePageChange = (page) => visit({ sort: sortBy, page });
 
     return (
         <>
@@ -47,7 +62,7 @@ export default function Index({ trips = [] }) {
                         <Select
                             label=""
                             value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value)}
+                            onChange={handleSort}
                             className="w-48"
                             selectClassName="h-10"
                         >
@@ -58,22 +73,24 @@ export default function Index({ trips = [] }) {
 
                     </div>
                 </div>
-                
-                {trips.length > 0 ? (
+
+                {data.length > 0 ? (
                     <>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            {trips.map((trip) => (
+                            {data.map((trip) => (
                                 <PergiBarengCard key={trip.id} data={trip} />
                             ))}
                         </div>
 
-                        <div className="mt-8">
-                            <Pagination
-                                currentPage={currentPage}
-                                totalPages={10}
-                                onPageChange={setCurrentPage}
-                            />
-                        </div>
+                        {lastPage > 1 && (
+                            <div className="mt-8">
+                                <Pagination
+                                    currentPage={currentPage}
+                                    totalPages={lastPage}
+                                    onPageChange={handlePageChange}
+                                />
+                            </div>
+                        )}
                     </>
                 ) : (
                     <div className="text-center py-20 bg-neutral-50 rounded-2xl border border-neutral-200">
