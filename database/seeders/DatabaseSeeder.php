@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             FinancingEstimateSeeder::class,
             TripParticipantSeeder::class,
             AdminHistorySeeder::class,
+            ActivityLogSeeder::class,
         ]);
     }
 }

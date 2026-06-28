@@ -23,6 +23,7 @@ use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminMessageController;
 use App\Http\Controllers\AdminPergiBarengController;
 use App\Http\Controllers\AdminTripController;
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\ContactController;
 use Illuminate\Support\Facades\Route;
 
@@ -187,9 +188,8 @@ Route::prefix('admin')->group(function () {
 
     // Halaman khusus admin (is_admin)
     Route::middleware(['auth', 'role:admin'])->group(function () {
-        Route::get('/', function () {
-            return inertia('Admin/Test');
-        })->name('admin');
+        Route::get('/', [AdminDashboardController::class, 'index'])->name('admin');
+        Route::get('/logs/export', [AdminDashboardController::class, 'exportLogs'])->name('admin.logs.export');
 
         Route::get('/management-user', [AdminUserController::class, 'index'])->name('management-user');
         Route::get('/management-user/{id}/edit-role', [AdminUserController::class, 'edit'])->name('management-user.edit');

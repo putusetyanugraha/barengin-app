@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -38,13 +39,18 @@ class AdminUserController extends Controller
             'is_verified' => $request->verified,
         ]);
 
+        ActivityLog::record('Mengubah izin pengguna: ' . $user->full_name);
+
         return redirect()->route('management-user')->with('success_message', 'User berhasil diupdate!');
     }
 
     // 4. Hapus user
     public function destroy($id)
     {
+        $user = User::find($id);
         User::destroy($id);
+
+        ActivityLog::record('Menghapus pengguna: ' . ($user?->full_name ?? "#$id"));
         
         return redirect()->back()->with('success_message', 'User berhasil dihapus!');
     }

@@ -87,6 +87,7 @@ html {
     font-family: var(--font-poppins);
     color: var(--color-neutral-700);
     font-size: 14.4px;
+    overflow-x: clip; /* cegah scroll horizontal tak disengaja di seluruh halaman */
 }
 
 @media (max-width: 640px) {
@@ -116,4 +117,14 @@ html {
 
 .scrollbar-slim::-webkit-scrollbar-thumb:hover {
     background-color: #737373; /* neutral-500 */
+}
+
+/* Sembunyikan scrollbar tapi tetap bisa di-scroll */
+.no-scrollbar {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge lama */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
 }

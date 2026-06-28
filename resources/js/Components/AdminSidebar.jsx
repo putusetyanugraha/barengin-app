@@ -125,7 +125,7 @@ export default function AdminSidebar({ isCollapsed, setIsCollapsed, isMobileOpen
                 {/* --- AKHIR BAGIAN YANG DIUPDATE --- */}
 
                 {/* List Menu */}
-                <div className="flex-1 overflow-y-auto py-6 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto py-6 no-scrollbar">
                     {visibleMenus.map((menu, index) => (
                         <div key={index} className="mb-6">
                             <div className={`px-6 mb-3 text-xs font-bold text-neutral-400 tracking-wider transition-all ${isCollapsed ? "text-center text-[10px]" : ""}`}>

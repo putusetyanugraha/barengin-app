@@ -10,21 +10,21 @@ export default function AdminLayout({ children, title = "Dasbor - Home", subtitl
     const [isMobileOpen, setIsMobileOpen] = useState(false);
 
     return (
-        <div className="min-h-screen bg-neutral-50 flex font-poppins">
+        <div className="min-h-screen bg-neutral-50 font-poppins overflow-x-clip">
             {/* Mengatur Meta Title secara dinamis */}
             <Head title={title} />
 
             {/* Panggil komponen Sidebar dan lempar props (state) ke dalamnya */}
-            <AdminSidebar 
+            <AdminSidebar
                 isCollapsed={isCollapsed}
                 setIsCollapsed={setIsCollapsed}
                 isMobileOpen={isMobileOpen}
                 setIsMobileOpen={setIsMobileOpen}
             />
 
-            {/* Bungkus Konten Utama dan Navbar */}
+            {/* Bungkus Konten Utama dan Navbar — block (bukan flex item) + margin sesuai lebar sidebar */}
             <div
-                className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out
+                className={`min-w-0 flex flex-col min-h-screen transition-all duration-300 ease-in-out
                     ${isCollapsed ? "lg:ml-20" : "lg:ml-72"}
                 `}
             >
@@ -36,7 +36,7 @@ export default function AdminLayout({ children, title = "Dasbor - Home", subtitl
                 />
 
                 {/* Konten Halaman (Children) */}
-                <main className="flex-1 p-4 sm:p-6 lg:p-8">
+                <main className="flex-1 min-w-0 overflow-x-hidden p-4 sm:p-6 lg:p-8">
                     {children}
                 </main>
             </div>

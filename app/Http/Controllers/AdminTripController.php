@@ -86,6 +86,8 @@ class AdminTripController extends Controller
             return $trip;
         });
 
+        \App\Models\ActivityLog::record('Membuat draft trip: ' . $trip->name);
+
         return redirect()->route('admin.trip.index')
             ->with('flash', ['type' => 'success', 'message' => 'Draft trip "' . $trip->name . '" berhasil disimpan.']);
     }
@@ -196,6 +198,8 @@ class AdminTripController extends Controller
         $trip->update([
             'status' => Trip::statusFromDates($trip->start_date, $trip->end_date),
         ]);
+
+        \App\Models\ActivityLog::record('Mempublikasikan trip: ' . $trip->name);
 
         return back()->with('flash', ['type' => 'success', 'message' => 'Trip berhasil dipublish dan tampil di halaman Trip Bareng.']);
     }

@@ -237,19 +237,19 @@ export default function ManagementUser({ users = [] }) {
                     <table className="w-full text-left border-collapse min-w-[800px]">
                         <thead>
                             <tr className="bg-neutral-100 border-y border-neutral-100 text-neutral-500 text-xs font-bold uppercase tracking-wider">
-                                <th className="py-4 px-6">NAME</th>
-                                <th className="py-4 px-6">EMAIL</th>
-                                <th className="py-4 px-6">ROLES</th>
-                                <th className="py-4 px-6 text-center">ACTION</th>
+                                <th className="py-3 px-5">NAME</th>
+                                <th className="py-3 px-5">EMAIL</th>
+                                <th className="py-3 px-5">ROLES</th>
+                                <th className="py-3 px-5 text-center">ACTION</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-neutral-100">
                             {paginatedUsers.length > 0 ? (
                                 paginatedUsers.map((user) => (
                                     <tr key={user.id} className="hover:bg-neutral-50/50 transition duration-150">
-                                        <td className="py-4 px-6">
+                                        <td className="py-3 px-5">
                                             <div className="flex items-center gap-3">
-                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${user.bg}`}>
+                                                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold ${user.bg}`}>
                                                     {user.initials}
                                                 </div>
                                                 <div className="flex items-center gap-1.5">
@@ -262,17 +262,17 @@ export default function ManagementUser({ users = [] }) {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="py-4 px-6 text-neutral-600 text-sm">
+                                        <td className="py-3 px-5 text-neutral-600 text-sm">
                                             {user.email}
                                         </td>
-                                        <td className="py-4 px-6">
+                                        <td className="py-3 px-5">
                                             <div className="flex flex-wrap gap-2">
                                                 {user.roles.map((role, idx) =>
                                                     renderRoleBadge(role, idx)
                                                 )}
                                             </div>
                                         </td>
-                                        <td className="py-4 px-6 text-center">
+                                        <td className="py-3 px-5 text-center">
                                             <div className="flex items-center justify-center gap-2">
                                                 {/* TOMBOL DELETE (Panggil Popup) */}
                                                 <button
